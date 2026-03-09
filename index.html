@@ -1,0 +1,1865 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bases de Datos — Guía Interactiva de Estudio</title>
+<style>
+/* ===== RESET & BASE ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f7fa;--bg2:#ffffff;--bg3:#e8ecf1;
+  --text:#1a2332;--text2:#4a5568;--text3:#718096;
+  --accent:#4f46e5;--accent2:#7c3aed;--accent-light:#eef2ff;
+  --green:#059669;--green-bg:#ecfdf5;
+  --red:#dc2626;--red-bg:#fef2f2;
+  --orange:#d97706;--orange-bg:#fffbeb;
+  --blue:#2563eb;--blue-bg:#eff6ff;
+  --border:#e2e8f0;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
+  --shadow-lg:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -2px rgba(0,0,0,.05);
+  --radius:10px;--radius-sm:6px;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --mono:'Cascadia Code','Fira Code','JetBrains Mono',Consolas,monospace;
+  --sidebar-w:280px;
+  --transition:all .25s ease;
+}
+[data-theme="dark"]{
+  --bg:#0f172a;--bg2:#1e293b;--bg3:#334155;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --accent:#818cf8;--accent2:#a78bfa;--accent-light:#1e1b4b;
+  --green:#34d399;--green-bg:#064e3b;
+  --red:#f87171;--red-bg:#450a0a;
+  --orange:#fbbf24;--orange-bg:#451a03;
+  --blue:#60a5fa;--blue-bg:#172554;
+  --border:#334155;
+  --shadow:0 1px 3px rgba(0,0,0,.3);
+  --shadow-lg:0 10px 15px -3px rgba(0,0,0,.4);
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.7;transition:var(--transition)}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+img{max-width:100%}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--text3);border-radius:4px}
+
+/* ===== LAYOUT ===== */
+.app{display:flex;min-height:100vh}
+
+/* ===== SIDEBAR ===== */
+.sidebar{
+  position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;
+  background:var(--bg2);border-right:1px solid var(--border);
+  overflow-y:auto;z-index:100;transition:transform .3s ease;
+  display:flex;flex-direction:column;
+}
+.sidebar.closed{transform:translateX(-100%)}
+.sidebar-header{padding:24px 20px 16px;border-bottom:1px solid var(--border)}
+.sidebar-header h2{font-size:1.1rem;color:var(--accent);font-weight:700;letter-spacing:-.5px}
+.sidebar-header p{font-size:.75rem;color:var(--text3);margin-top:4px}
+.sidebar-nav{flex:1;padding:12px 0;overflow-y:auto}
+.nav-chapter{padding:0}
+.nav-chapter-title{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 20px;font-size:.82rem;font-weight:700;
+  color:var(--text2);cursor:pointer;transition:var(--transition);
+  border:none;background:none;width:100%;text-align:left;
+}
+.nav-chapter-title:hover{color:var(--accent);background:var(--accent-light)}
+.nav-chapter-title .ch-num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:24px;height:24px;border-radius:6px;
+  background:var(--accent);color:#fff;font-size:.7rem;font-weight:800;flex-shrink:0;
+}
+.nav-sections{display:none;padding:2px 0 8px}
+.nav-chapter.open .nav-sections{display:block}
+.nav-chapter-title .arrow{margin-left:auto;font-size:.65rem;transition:transform .2s}
+.nav-chapter.open .nav-chapter-title .arrow{transform:rotate(90deg)}
+.nav-link{
+  display:block;padding:6px 20px 6px 52px;font-size:.78rem;
+  color:var(--text3);transition:var(--transition);cursor:pointer;
+  border:none;background:none;width:100%;text-align:left;
+}
+.nav-link:hover,.nav-link.active{color:var(--accent);background:var(--accent-light)}
+
+/* Progress */
+.sidebar-progress{padding:16px 20px;border-top:1px solid var(--border)}
+.progress-label{font-size:.72rem;color:var(--text3);margin-bottom:6px;display:flex;justify-content:space-between}
+.progress-bar{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .5s ease;width:0%}
+
+/* ===== MAIN ===== */
+.main{flex:1;margin-left:var(--sidebar-w);transition:margin .3s ease}
+.sidebar.closed+.main{margin-left:0}
+
+/* Top bar */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;gap:12px;
+  padding:12px 32px;background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(12px);
+}
+.btn-icon{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:36px;height:36px;border-radius:var(--radius-sm);
+  border:1px solid var(--border);background:var(--bg);
+  color:var(--text2);cursor:pointer;transition:var(--transition);font-size:1.1rem;
+}
+.btn-icon:hover{background:var(--accent-light);color:var(--accent);border-color:var(--accent)}
+.topbar-title{font-size:.85rem;color:var(--text2);flex:1}
+
+/* Content */
+.content{max-width:860px;margin:0 auto;padding:32px 32px 80px}
+
+/* ===== TYPOGRAPHY ===== */
+.chapter-header{margin-bottom:40px;padding-bottom:24px;border-bottom:2px solid var(--border)}
+.chapter-header .ch-label{
+  display:inline-block;padding:4px 14px;border-radius:20px;
+  background:var(--accent);color:#fff;font-size:.75rem;font-weight:700;
+  letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px;
+}
+.chapter-header h1{font-size:1.8rem;font-weight:800;letter-spacing:-.5px;line-height:1.3;margin-bottom:8px}
+.chapter-header p{color:var(--text2);font-size:.95rem}
+
+.section{margin-bottom:48px;scroll-margin-top:80px}
+.section h2{font-size:1.35rem;font-weight:700;margin-bottom:16px;color:var(--text);padding-bottom:8px;border-bottom:1px solid var(--border)}
+.section h3{font-size:1.1rem;font-weight:600;margin:24px 0 12px;color:var(--text)}
+.section h4{font-size:.95rem;font-weight:600;margin:16px 0 8px;color:var(--text2)}
+.section p{margin-bottom:12px;color:var(--text)}
+.section ul,.section ol{margin:8px 0 16px 24px}
+.section li{margin-bottom:6px;color:var(--text)}
+.section li strong{color:var(--text)}
+
+/* Callouts */
+.callout{
+  padding:16px 20px;border-radius:var(--radius);margin:16px 0;
+  border-left:4px solid;font-size:.9rem;
+}
+.callout.info{background:var(--blue-bg);border-color:var(--blue);color:var(--blue)}
+.callout.tip{background:var(--green-bg);border-color:var(--green)}
+.callout.warning{background:var(--orange-bg);border-color:var(--orange)}
+.callout.danger{background:var(--red-bg);border-color:var(--red)}
+.callout strong{display:block;margin-bottom:4px}
+
+/* Code */
+pre{
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px 20px;overflow-x:auto;margin:12px 0 16px;font-size:.85rem;line-height:1.6;
+  font-family:var(--mono);color:var(--text);
+}
+code{font-family:var(--mono);font-size:.88em;background:var(--bg3);padding:2px 6px;border-radius:4px}
+pre code{background:none;padding:0}
+.kw{color:var(--accent);font-weight:600}
+.fn{color:var(--accent2)}
+.str{color:var(--green)}
+.cm{color:var(--text3);font-style:italic}
+.num{color:var(--orange)}
+
+/* Tables */
+.table-wrap{overflow-x:auto;margin:12px 0 16px}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th{background:var(--bg3);font-weight:600;text-align:left;padding:10px 14px;border-bottom:2px solid var(--border)}
+td{padding:10px 14px;border-bottom:1px solid var(--border)}
+tr:hover td{background:var(--accent-light)}
+
+/* ===== INTERACTIVE COMPONENTS ===== */
+
+/* Quiz */
+.quiz-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:24px;margin:20px 0;box-shadow:var(--shadow);
+}
+.quiz-card .q-header{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.quiz-card .q-badge{
+  padding:3px 10px;border-radius:12px;font-size:.7rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.5px;
+}
+.q-badge.mc{background:var(--accent-light);color:var(--accent)}
+.q-badge.tf{background:var(--green-bg);color:var(--green)}
+.q-badge.fill{background:var(--orange-bg);color:var(--orange)}
+.q-badge.code{background:var(--blue-bg);color:var(--blue)}
+.q-badge.match{background:#fce7f3;color:#be185d}
+.quiz-card .q-text{font-size:.95rem;font-weight:500;margin-bottom:16px;line-height:1.6}
+.quiz-options{display:flex;flex-direction:column;gap:8px}
+.quiz-opt{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:12px 16px;border:2px solid var(--border);border-radius:var(--radius-sm);
+  cursor:pointer;transition:var(--transition);font-size:.9rem;background:var(--bg);
+}
+.quiz-opt:hover{border-color:var(--accent);background:var(--accent-light)}
+.quiz-opt.selected{border-color:var(--accent);background:var(--accent-light)}
+.quiz-opt.correct{border-color:var(--green);background:var(--green-bg)}
+.quiz-opt.incorrect{border-color:var(--red);background:var(--red-bg)}
+.quiz-opt .opt-marker{
+  width:24px;height:24px;border-radius:50%;border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  font-size:.75rem;font-weight:700;transition:var(--transition);margin-top:1px;
+}
+.quiz-opt.selected .opt-marker{border-color:var(--accent);background:var(--accent);color:#fff}
+.quiz-opt.correct .opt-marker{border-color:var(--green);background:var(--green);color:#fff}
+.quiz-opt.incorrect .opt-marker{border-color:var(--red);background:var(--red);color:#fff}
+.quiz-feedback{
+  margin-top:16px;padding:14px 18px;border-radius:var(--radius-sm);
+  font-size:.88rem;display:none;line-height:1.6;
+}
+.quiz-feedback.show{display:block}
+.quiz-feedback.correct{background:var(--green-bg);color:var(--green);border:1px solid var(--green)}
+.quiz-feedback.incorrect{background:var(--red-bg);color:var(--red);border:1px solid var(--red)}
+.quiz-actions{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap}
+
+/* Buttons */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 18px;border-radius:var(--radius-sm);font-size:.85rem;font-weight:600;
+  border:none;cursor:pointer;transition:var(--transition);
+}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--accent-light);color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* Fill in blanks */
+.fill-input{
+  display:inline-block;min-width:140px;padding:4px 10px;
+  border:2px dashed var(--accent);border-radius:var(--radius-sm);
+  font-family:var(--mono);font-size:.88rem;background:var(--bg);
+  color:var(--text);outline:none;transition:var(--transition);
+}
+.fill-input:focus{border-style:solid;box-shadow:0 0 0 3px rgba(79,70,229,.15)}
+.fill-input.correct{border-color:var(--green);border-style:solid;background:var(--green-bg)}
+.fill-input.incorrect{border-color:var(--red);border-style:solid;background:var(--red-bg)}
+
+/* Flashcards */
+.flashcard-container{display:flex;gap:16px;flex-wrap:wrap;margin:16px 0}
+.flashcard{
+  width:260px;height:180px;perspective:800px;cursor:pointer;flex-shrink:0;
+}
+.flashcard-inner{
+  position:relative;width:100%;height:100%;transition:transform .6s;transform-style:preserve-3d;
+}
+.flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+.flashcard-front,.flashcard-back{
+  position:absolute;width:100%;height:100%;backface-visibility:hidden;
+  border-radius:var(--radius);padding:20px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;
+  border:2px solid var(--border);
+}
+.flashcard-front{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.flashcard-front .fc-label{font-size:.65rem;text-transform:uppercase;letter-spacing:1px;opacity:.7;margin-bottom:8px}
+.flashcard-front .fc-term{font-size:1rem;font-weight:700;line-height:1.4}
+.flashcard-back{background:var(--bg2);transform:rotateY(180deg);font-size:.85rem;line-height:1.5;color:var(--text)}
+.flashcard-hint{font-size:.7rem;color:var(--text3);margin-top:12px;text-align:center}
+
+/* Matching */
+.match-exercise{margin:16px 0}
+.match-cols{display:flex;gap:24px;flex-wrap:wrap}
+.match-col{flex:1;min-width:200px}
+.match-col h4{font-size:.8rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:10px}
+.match-item{
+  padding:10px 14px;margin-bottom:8px;border-radius:var(--radius-sm);
+  border:2px solid var(--border);font-size:.85rem;cursor:pointer;
+  transition:var(--transition);background:var(--bg);user-select:none;
+}
+.match-item:hover{border-color:var(--accent)}
+.match-item.selected{border-color:var(--accent);background:var(--accent-light);font-weight:600}
+.match-item.matched{border-color:var(--green);background:var(--green-bg)}
+.match-item.wrong{border-color:var(--red);background:var(--red-bg)}
+
+/* Code exercise */
+.code-exercise{margin:16px 0}
+.code-editor{
+  width:100%;min-height:100px;padding:14px 18px;
+  font-family:var(--mono);font-size:.88rem;line-height:1.6;
+  background:var(--bg3);border:2px solid var(--border);border-radius:var(--radius);
+  color:var(--text);resize:vertical;outline:none;transition:var(--transition);
+}
+.code-editor:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+
+/* TF exercise */
+.tf-options{display:flex;gap:12px;margin-bottom:12px}
+.tf-btn{
+  flex:1;padding:12px;text-align:center;border:2px solid var(--border);
+  border-radius:var(--radius-sm);cursor:pointer;font-weight:600;font-size:.9rem;
+  transition:var(--transition);background:var(--bg);color:var(--text);
+}
+.tf-btn:hover{border-color:var(--accent)}
+.tf-btn.selected{border-color:var(--accent);background:var(--accent-light)}
+.tf-btn.correct-answer{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+.tf-btn.wrong-answer{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+
+/* Chapter divider */
+.chapter-divider{
+  margin:60px 0 40px;padding:32px;text-align:center;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:var(--radius);color:#fff;
+}
+.chapter-divider .cd-num{font-size:.8rem;letter-spacing:2px;text-transform:uppercase;opacity:.8}
+.chapter-divider h2{font-size:1.6rem;font-weight:800;margin-top:8px}
+
+/* Score summary */
+.score-summary{
+  background:var(--bg2);border:2px solid var(--accent);border-radius:var(--radius);
+  padding:24px;margin:32px 0;text-align:center;
+}
+.score-summary .big-score{font-size:2.5rem;font-weight:800;color:var(--accent)}
+.score-summary p{color:var(--text2);margin-top:8px}
+
+/* Scroll to top */
+.scroll-top{
+  position:fixed;bottom:24px;right:24px;width:44px;height:44px;
+  border-radius:50%;background:var(--accent);color:#fff;
+  display:none;align-items:center;justify-content:center;
+  cursor:pointer;box-shadow:var(--shadow-lg);border:none;font-size:1.2rem;
+  z-index:90;transition:var(--transition);
+}
+.scroll-top.show{display:flex}
+.scroll-top:hover{background:var(--accent2);transform:translateY(-2px)}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0!important}
+  .content{padding:24px 18px 60px}
+  .chapter-header h1{font-size:1.4rem}
+  .flashcard-container{justify-content:center}
+  .match-cols{flex-direction:column}
+  .topbar{padding:12px 18px}
+}
+@media(max-width:500px){
+  .flashcard{width:100%}
+  .tf-options{flex-direction:column}
+}
+
+/* ===== PRINT ===== */
+@media print{
+  .sidebar,.topbar,.scroll-top,.quiz-actions,.btn{display:none!important}
+  .main{margin-left:0!important}
+  .quiz-feedback.show{display:block!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h2>📚 Bases de Datos</h2>
+    <p>Silberschatz — Cap. 1-4</p>
+  </div>
+  <nav class="sidebar-nav" id="sidebarNav">
+    <!-- filled by JS -->
+  </nav>
+  <div class="sidebar-progress">
+    <div class="progress-label">
+      <span>Progreso de ejercicios</span>
+      <span id="progressPct">0%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+</aside>
+
+<!-- ===== MAIN ===== -->
+<div class="main" id="main">
+  <header class="topbar">
+    <button class="btn-icon" id="menuToggle" title="Menú">☰</button>
+    <span class="topbar-title" id="topbarTitle">Capítulo 1 — Introducción</span>
+    <button class="btn-icon" id="themeToggle" title="Tema">🌙</button>
+  </header>
+
+  <div class="content" id="content">
+
+<!-- ============================================================ -->
+<!--                    CAPÍTULO 1                                 -->
+<!-- ============================================================ -->
+<div class="chapter-divider" id="cap1">
+  <div class="cd-num">Capítulo 1</div>
+  <h2>Introducción a los Sistemas de Bases de Datos</h2>
+</div>
+
+<!-- 1.1 -->
+<div class="section" id="s1-1">
+  <h2>1.1 Conceptos Fundamentales</h2>
+
+  <h3>¿Qué es un DBMS?</h3>
+  <p>Un <strong>Sistema Gestor de Bases de Datos</strong> (DBMS — Database Management System) es una colección de datos interrelacionados junto con un conjunto de programas que permiten acceder a esos datos. Su objetivo primario es proporcionar una forma <strong>conveniente y eficiente</strong> de almacenar y recuperar información.</p>
+  <p>La colección de datos se denomina <strong>base de datos</strong> (database) y contiene información relevante para una empresa u organización.</p>
+
+  <h3>Aplicaciones de los Sistemas de Bases de Datos</h3>
+  <ul>
+    <li><strong>Información empresarial:</strong> Ventas, contabilidad, recursos humanos.</li>
+    <li><strong>Banca y finanzas:</strong> Cuentas, préstamos, transacciones.</li>
+    <li><strong>Universidades:</strong> Estudiantes, inscripciones, calificaciones.</li>
+    <li><strong>Aerolíneas:</strong> Reservaciones e información de vuelos.</li>
+    <li><strong>Servicios web:</strong> Redes sociales, comercio en línea.</li>
+  </ul>
+
+  <h3>Dos Modos de Uso</h3>
+  <ul>
+    <li><strong>OLTP (Procesamiento de transacciones en línea):</strong> Muchos usuarios acceden y actualizan pequeñas cantidades de datos simultáneamente.</li>
+    <li><strong>Analytics / Data Mining:</strong> Procesamiento de datos para descubrir patrones, modelos predictivos y decisiones de negocio.</li>
+  </ul>
+
+  <!-- Flashcards -->
+  <h4>🃏 Flashcards — Conceptos fundamentales</h4>
+  <p class="flashcard-hint">Haz clic en cada tarjeta para ver la definición</p>
+  <div class="flashcard-container">
+    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front"><div class="fc-label">Término</div><div class="fc-term">DBMS</div></div>
+        <div class="flashcard-back">Colección de datos interrelacionados + programas para accederlos. Provee almacenamiento y recuperación conveniente y eficiente.</div>
+      </div>
+    </div>
+    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front"><div class="fc-label">Término</div><div class="fc-term">OLTP</div></div>
+        <div class="flashcard-back">Procesamiento de transacciones en línea. Muchos usuarios leen y modifican pequeñas cantidades de datos simultáneamente.</div>
+      </div>
+    </div>
+    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front"><div class="fc-label">Término</div><div class="fc-term">Analytics</div></div>
+        <div class="flashcard-back">Procesamiento de grandes volúmenes de datos para descubrir patrones, construir modelos predictivos y apoyar decisiones.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 1.2 -->
+<div class="section" id="s1-2">
+  <h2>1.2 Propósito de los Sistemas de Bases de Datos</h2>
+  <p>Para entender por qué existen los DBMS, consideremos los problemas del procesamiento de archivos tradicional:</p>
+
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>#</th><th>Problema</th><th>Descripción</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><strong>Redundancia e inconsistencia</strong></td><td>Datos duplicados en varios archivos; si se actualiza en un lugar pero no en otro, se vuelven inconsistentes.</td></tr>
+      <tr><td>2</td><td><strong>Dificultad de acceso</strong></td><td>Cada consulta nueva necesita un programa nuevo; no hay forma genérica de recuperar datos.</td></tr>
+      <tr><td>3</td><td><strong>Aislamiento de datos</strong></td><td>Datos dispersos en múltiples archivos con distintos formatos dificultan nuevas aplicaciones.</td></tr>
+      <tr><td>4</td><td><strong>Problemas de integridad</strong></td><td>Restricciones de consistencia difíciles de imponer cuando están en múltiples programas.</td></tr>
+      <tr><td>5</td><td><strong>Falta de atomicidad</strong></td><td>Operaciones parciales (ej: transferencia bancaria) pueden dejar datos inconsistentes.</td></tr>
+      <tr><td>6</td><td><strong>Acceso concurrente</strong></td><td>Dos procesos modificando el mismo dato simultáneamente producen resultados incorrectos.</td></tr>
+      <tr><td>7</td><td><strong>Problemas de seguridad</strong></td><td>Difícil restringir acceso a partes específicas según el rol del usuario.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout tip">
+    <strong>💡 Conclusión clave:</strong> Todos estos problemas motivaron el desarrollo de los DBMS en la década de 1960-1970. Los DBMS resuelven cada uno mediante mecanismos integrados.
+  </div>
+
+  <!-- Quiz: problemas de archivo -->
+  <div class="quiz-card" data-quiz="q1-2a">
+    <div class="q-header"><span class="q-badge mc">Opción múltiple</span></div>
+    <div class="q-text">Dos cajeros de banco leen el saldo $10,000 simultáneamente y cada uno resta $500. ¿Cuál será el saldo final <strong>incorrecto</strong> y cuál problema lo causa?</div>
+    <div class="quiz-options">
+      <div class="quiz-opt" data-val="a" onclick="selectOpt(this)"><span class="opt-marker">A</span><span>$9,000 — Problema de atomicidad</span></div>
+      <div class="quiz-opt" data-val="b" onclick="selectOpt(this)"><span class="opt-marker">B</span><span>$9,500 — Anomalía de acceso concurrente</span></div>
+      <div class="quiz-opt" data-val="c" onclick="selectOpt(this)"><span class="opt-marker">C</span><span>$9,500 — Redundancia de datos</span></div>
+      <div class="quiz-opt" data-val="d" onclick="selectOpt(this)"><span class="opt-marker">D</span><span>$10,000 — Aislamiento de datos</span></div>
+    </div>
+    <div class="quiz-feedback" id="fb-q1-2a"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkQuiz('q1-2a','b','Correcto. Ambos leen $10,000. Uno escribe $9,500 y el otro también $9,500. El correcto sería $9,000. Esto es una anomalía de acceso concurrente.','El saldo queda en $9,500 (no $9,000) porque ambos leyeron el valor original antes de que el otro actualizara. Es una anomalía de acceso concurrente.')">Verificar</button></div>
+  </div>
+</div>
+
+<!-- 1.3 -->
+<div class="section" id="s1-3">
+  <h2>1.3 Vista de los Datos</h2>
+
+  <h3>Modelos de Datos</h3>
+  <ul>
+    <li><strong>Modelo Relacional:</strong> Usa tablas (relaciones) para representar datos. El modelo más ampliamente usado.</li>
+    <li><strong>Modelo Entidad-Relación (E-R):</strong> Usa entidades y relaciones entre ellas. Muy usado para diseño.</li>
+    <li><strong>Modelo Semi-estructurado:</strong> Permite datos con distintos conjuntos de atributos (JSON, XML).</li>
+    <li><strong>Modelo Orientado a Objetos:</strong> Integra conceptos de POO con el modelo relacional.</li>
+  </ul>
+
+  <h3>Abstracción de Datos — Los Tres Niveles</h3>
+  <ul>
+    <li><strong>Nivel físico:</strong> Cómo se almacenan los datos en disco. Estructuras de datos complejas (índices, bloques).</li>
+    <li><strong>Nivel lógico:</strong> QUÉ datos hay y sus relaciones. Programadores y DBAs trabajan aquí.</li>
+    <li><strong>Nivel de vista:</strong> Solo una parte de la BD relevante para un usuario particular. Provee seguridad.</li>
+  </ul>
+
+  <h3>Instancias y Esquemas</h3>
+  <ul>
+    <li><strong>Esquema:</strong> Diseño lógico general (análogo a definición de tipo). Raramente cambia.</li>
+    <li><strong>Instancia:</strong> Datos reales almacenados en un momento dado (análogo al valor de una variable).</li>
+    <li><strong>Independencia física de datos:</strong> Las aplicaciones no dependen del esquema físico.</li>
+  </ul>
+
+  <!-- Matching exercise -->
+  <div class="quiz-card" data-quiz="match1-3">
+    <div class="q-header"><span class="q-badge match">Emparejar</span></div>
+    <div class="q-text">Empareja cada nivel de abstracción con su descripción (selecciona uno de cada columna):</div>
+    <div class="match-exercise" id="match1-3">
+      <div class="match-cols">
+        <div class="match-col">
+          <h4>Nivel</h4>
+          <div class="match-item" data-match="left" data-pair="1" onclick="selectMatch(this,'match1-3')">Físico</div>
+          <div class="match-item" data-match="left" data-pair="2" onclick="selectMatch(this,'match1-3')">Lógico</div>
+          <div class="match-item" data-match="left" data-pair="3" onclick="selectMatch(this,'match1-3')">Vista</div>
+        </div>
+        <div class="match-col">
+          <h4>Descripción</h4>
+          <div class="match-item" data-match="right" data-pair="3" onclick="selectMatch(this,'match1-3')">Subconjunto de la BD visible al usuario final</div>
+          <div class="match-item" data-match="right" data-pair="1" onclick="selectMatch(this,'match1-3')">Cómo se almacenan los datos en disco</div>
+          <div class="match-item" data-match="right" data-pair="2" onclick="selectMatch(this,'match1-3')">Qué datos hay y sus relaciones</div>
+        </div>
+      </div>
+    </div>
+    <div class="quiz-feedback" id="fb-match1-3"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkMatch('match1-3')">Verificar</button><button class="btn btn-secondary" onclick="resetMatch('match1-3')">Reiniciar</button></div>
+  </div>
+</div>
+
+<!-- 1.4 -->
+<div class="section" id="s1-4">
+  <h2>1.4 Lenguajes de Base de Datos</h2>
+
+  <h3>DDL — Lenguaje de Definición de Datos</h3>
+  <p>Permite especificar el esquema de la BD. Genera salida en el <strong>diccionario de datos</strong> (metadatos). Restricciones definibles:</p>
+  <ul>
+    <li><strong>Restricciones de dominio:</strong> Cada atributo tiene un tipo de valores.</li>
+    <li><strong>Integridad referencial:</strong> Valores deben existir en la relación referenciada.</li>
+    <li><strong>Autorización:</strong> Diferentes usuarios con diferentes permisos.</li>
+  </ul>
+
+  <h3>DML — Lenguaje de Manipulación de Datos</h3>
+  <ul>
+    <li><strong>DML procedimental:</strong> El usuario especifica QUÉ datos necesita Y CÓMO obtenerlos.</li>
+    <li><strong>DML declarativo:</strong> El usuario especifica solo QUÉ datos necesita. SQL es un ejemplo.</li>
+  </ul>
+
+  <div class="quiz-card" data-quiz="q1-4a">
+    <div class="q-header"><span class="q-badge tf">Verdadero / Falso</span></div>
+    <div class="q-text">Un DML procedimental requiere que el usuario especifique tanto qué datos necesita como cómo obtenerlos.</div>
+    <div class="tf-options">
+      <div class="tf-btn" onclick="selectTF(this,'q1-4a')" data-val="true">Verdadero</div>
+      <div class="tf-btn" onclick="selectTF(this,'q1-4a')" data-val="false">Falso</div>
+    </div>
+    <div class="quiz-feedback" id="fb-q1-4a"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkTF('q1-4a','true','Correcto. Los DML procedimentales requieren tanto el QUÉ como el CÓMO. Los declarativos (como SQL) solo requieren el QUÉ.','Los DML procedimentales SÍ requieren ambos: qué datos y cómo obtenerlos.')">Verificar</button></div>
+  </div>
+
+  <div class="quiz-card" data-quiz="q1-4b">
+    <div class="q-header"><span class="q-badge tf">Verdadero / Falso</span></div>
+    <div class="q-text">El diccionario de datos es una tabla especial que puede ser modificada directamente por cualquier usuario.</div>
+    <div class="tf-options">
+      <div class="tf-btn" onclick="selectTF(this,'q1-4b')" data-val="true">Verdadero</div>
+      <div class="tf-btn" onclick="selectTF(this,'q1-4b')" data-val="false">Falso</div>
+    </div>
+    <div class="quiz-feedback" id="fb-q1-4b"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkTF('q1-4b','false','Correcto. El diccionario de datos contiene metadatos y solo puede ser accedido y actualizado por el sistema de BD, no por usuarios regulares.','FALSO. El diccionario de datos solo puede ser accedido y actualizado por el propio sistema de BD, no por usuarios regulares.')">Verificar</button></div>
+  </div>
+</div>
+
+<!-- 1.5/1.6 -->
+<div class="section" id="s1-5">
+  <h2>1.5 Diseño y Motor del DBMS</h2>
+
+  <h3>Fases del Diseño</h3>
+  <ol>
+    <li><strong>Fase conceptual:</strong> Caracterizar necesidades de datos → esquema conceptual (modelo E-R).</li>
+    <li><strong>Fase lógica:</strong> Mapear al modelo de datos del DBMS (ej: relacional).</li>
+    <li><strong>Fase física:</strong> Organización de archivos, estructuras de almacenamiento.</li>
+  </ol>
+
+  <h3>Componentes del Motor</h3>
+  <ul>
+    <li><strong>Gestor de almacenamiento:</strong> Autorización, transacciones, archivos, buffer.</li>
+    <li><strong>Procesador de consultas:</strong> Intérprete DDL, compilador DML, motor de evaluación.</li>
+    <li><strong>Gestor de transacciones:</strong> Garantiza propiedades ACID.</li>
+  </ul>
+
+  <h4>🃏 Flashcards — Propiedades ACID</h4>
+  <p class="flashcard-hint">Clic para voltear</p>
+  <div class="flashcard-container">
+    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front"><div class="fc-label">ACID</div><div class="fc-term">Atomicidad</div></div>
+        <div class="flashcard-back">La transacción ocurre en su totalidad o no ocurre en absoluto (todo-o-nada).</div>
+      </div>
+    </div>
+    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front"><div class="fc-label">ACID</div><div class="fc-term">Consistencia</div></div>
+        <div class="flashcard-back">La BD permanece en estado consistente después de la transacción.</div>
+      </div>
+    </div>
+    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front"><div class="fc-label">ACID</div><div class="fc-term">Durabilidad</div></div>
+        <div class="flashcard-back">Los cambios de una transacción confirmada (committed) persisten aun si ocurre un fallo del sistema.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Arquitectura de Aplicaciones</h3>
+  <ul>
+    <li><strong>Dos capas:</strong> Aplicación en cliente → BD directamente.</li>
+    <li><strong>Tres capas:</strong> Cliente → Servidor de aplicación → BD. Mejor seguridad y rendimiento.</li>
+  </ul>
+
+  <h3>Usuarios y Administradores</h3>
+  <ul>
+    <li><strong>Usuarios ingenuos:</strong> Interactúan mediante interfaces predefinidas.</li>
+    <li><strong>Programadores de aplicación:</strong> Escriben programas que interactúan con la BD.</li>
+    <li><strong>Usuarios sofisticados:</strong> Usan lenguajes de consulta directamente.</li>
+    <li><strong>DBA:</strong> Control central: esquema, almacenamiento, autorización, mantenimiento.</li>
+  </ul>
+
+  <div class="quiz-card" data-quiz="q1-5a">
+    <div class="q-header"><span class="q-badge tf">Verdadero / Falso</span></div>
+    <div class="q-text">La arquitectura de tres capas ofrece mejor seguridad que la de dos capas porque la lógica de negocio está en el servidor de aplicación, no en el cliente.</div>
+    <div class="tf-options">
+      <div class="tf-btn" onclick="selectTF(this,'q1-5a')" data-val="true">Verdadero</div>
+      <div class="tf-btn" onclick="selectTF(this,'q1-5a')" data-val="false">Falso</div>
+    </div>
+    <div class="quiz-feedback" id="fb-q1-5a"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkTF('q1-5a','true','Correcto. En tres capas, la lógica de negocio y el acceso directo a BD están en el servidor de aplicación, protegiendo la BD de accesos no autorizados.','VERDADERO. En la arquitectura de tres capas el cliente no accede directamente a la BD, mejorando la seguridad.')">Verificar</button></div>
+  </div>
+
+  <div class="quiz-card" data-quiz="q1-5b">
+    <div class="q-header"><span class="q-badge mc">Opción múltiple</span></div>
+    <div class="q-text">Una cuenta bancaria tiene $10,000. Se procesan dos retiros simultáneos de $500 y $100 en paralelo (ambos leen el saldo original). ¿Cuál podría ser el saldo incorrecto y cuál debería ser el correcto?</div>
+    <div class="quiz-options">
+      <div class="quiz-opt" data-val="a" onclick="selectOpt(this)"><span class="opt-marker">A</span><span>Incorrecto: $9,500 o $9,900 — Correcto: $9,400</span></div>
+      <div class="quiz-opt" data-val="b" onclick="selectOpt(this)"><span class="opt-marker">B</span><span>Incorrecto: $9,400 — Correcto: $9,500</span></div>
+      <div class="quiz-opt" data-val="c" onclick="selectOpt(this)"><span class="opt-marker">C</span><span>Incorrecto: $9,000 — Correcto: $9,400</span></div>
+    </div>
+    <div class="quiz-feedback" id="fb-q1-5b"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkQuiz('q1-5b','a','Correcto. Ambos leen $10,000. El primero escribe $9,500 (10,000−500) y el segundo $9,900 (10,000−100). El último en escribir gana. El correcto es $9,400.','El resultado depende de cuál escribe último: $9,500 o $9,900. El valor correcto debería ser $9,400 (10,000 − 500 − 100).')">Verificar</button></div>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!--                    CAPÍTULO 2                                 -->
+<!-- ============================================================ -->
+<div class="chapter-divider" id="cap2">
+  <div class="cd-num">Capítulo 2</div>
+  <h2>Introducción al Modelo Relacional</h2>
+</div>
+
+<!-- 2.1 -->
+<div class="section" id="s2-1">
+  <h2>2.1 Estructura de las Bases de Datos Relacionales</h2>
+
+  <h4>🃏 Flashcards — Terminología relacional</h4>
+  <p class="flashcard-hint">Clic para voltear</p>
+  <div class="flashcard-container">
+    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front"><div class="fc-label">Término</div><div class="fc-term">Relación</div></div>
+        <div class="flashcard-back">Una tabla con filas y columnas. Matemáticamente es un conjunto de tuplas.</div>
+      </div>
+    </div>
+    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front"><div class="fc-label">Término</div><div class="fc-term">Tupla</div></div>
+        <div class="flashcard-back">Una fila de la tabla. Representa un hecho individual.</div>
+      </div>
+    </div>
+    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front"><div class="fc-label">Término</div><div class="fc-term">Atributo</div></div>
+        <div class="flashcard-back">Una columna de la tabla. Cada atributo tiene un nombre único dentro de la relación.</div>
+      </div>
+    </div>
+    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front"><div class="fc-label">Término</div><div class="fc-term">Dominio atómico</div></div>
+        <div class="flashcard-back">Conjunto de valores permitidos para un atributo, cuyos elementos son indivisibles.</div>
+      </div>
+    </div>
+    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front"><div class="fc-label">Término</div><div class="fc-term">Valor nulo (NULL)</div></div>
+        <div class="flashcard-back">Valor especial que indica que el valor es desconocido o no existe. Complica operaciones y debe evitarse cuando sea posible.</div>
+      </div>
+    </div>
+  </div>
+
+  <p>Ejemplo de la base de datos universitaria:</p>
+  <pre><code>Relación instructor: (<span class="kw">ID</span>, name, dept_name, salary)
+Ejemplo de tupla: (22222, Einstein, Physics, 95000)
+
+Relación department: (<span class="kw">dept_name</span>, building, budget)
+Ejemplo de tupla: (Biology, Watson, 90000)</code></pre>
+</div>
+
+<!-- 2.2-2.3 -->
+<div class="section" id="s2-2">
+  <h2>2.2-2.3 Esquema de BD y Claves</h2>
+
+  <h3>Esquema completo de la universidad</h3>
+  <pre><code><span class="kw">classroom</span>(building, room_number, capacity)
+<span class="kw">department</span>(dept_name, building, budget)
+<span class="kw">course</span>(course_id, title, dept_name, credits)
+<span class="kw">instructor</span>(ID, name, dept_name, salary)
+<span class="kw">section</span>(course_id, sec_id, semester, year, building, room_number, time_slot_id)
+<span class="kw">teaches</span>(ID, course_id, sec_id, semester, year)
+<span class="kw">student</span>(ID, name, dept_name, tot_cred)
+<span class="kw">takes</span>(ID, course_id, sec_id, semester, year, grade)
+<span class="kw">advisor</span>(s_ID, i_ID)
+<span class="kw">prereq</span>(course_id, prereq_id)</code></pre>
+
+  <h3>Tipos de Claves</h3>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Tipo</th><th>Definición</th><th>Ejemplo (instructor)</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Superclave</strong></td><td>Cualquier conjunto de atributos que identifica cada tupla de forma única</td><td>{ID}, {ID, name}, {ID, name, salary}</td></tr>
+      <tr><td><strong>Clave candidata</strong></td><td>Superclave minimal (sin subconjunto propio que sea superclave)</td><td>{ID}</td></tr>
+      <tr><td><strong>Clave primaria</strong></td><td>Clave candidata elegida como identificador principal; no puede ser null</td><td>ID (subrayado en esquema)</td></tr>
+      <tr><td><strong>Clave foránea</strong></td><td>Atributo cuyo valor debe existir como clave primaria en otra relación</td><td>dept_name → department</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout warning">
+    <strong>⚠️ Regla de elección:</strong> La clave primaria debe ser un atributo que raramente o nunca cambie su valor. La dirección o el nombre NO son buenas opciones.
+  </div>
+
+  <!-- Quiz claves -->
+  <div class="quiz-card" data-quiz="q2-2a">
+    <div class="q-header"><span class="q-badge tf">Verdadero / Falso</span></div>
+    <div class="q-text">Una superclave siempre es también una clave candidata.</div>
+    <div class="tf-options">
+      <div class="tf-btn" onclick="selectTF(this,'q2-2a')" data-val="true">Verdadero</div>
+      <div class="tf-btn" onclick="selectTF(this,'q2-2a')" data-val="false">Falso</div>
+    </div>
+    <div class="quiz-feedback" id="fb-q2-2a"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkTF('q2-2a','false','Correcto. Una superclave puede contener atributos redundantes. Una clave candidata es la superclave MINIMAL. Ej: {ID, name} es superclave pero no clave candidata si {ID} ya identifica.','FALSO. Una superclave puede tener atributos redundantes. La clave candidata es la superclave minimal — ningún subconjunto propio es también superclave.')">Verificar</button></div>
+  </div>
+
+  <div class="quiz-card" data-quiz="q2-2b">
+    <div class="q-header"><span class="q-badge mc">Opción múltiple</span></div>
+    <div class="q-text">¿Podemos usar <code>name</code> como clave primaria de la relación <code>instructor</code>?</div>
+    <div class="quiz-options">
+      <div class="quiz-opt" data-val="a" onclick="selectOpt(this)"><span class="opt-marker">A</span><span>Sí, siempre que en la instancia actual no haya duplicados</span></div>
+      <div class="quiz-opt" data-val="b" onclick="selectOpt(this)"><span class="opt-marker">B</span><span>No, porque la clave primaria debe garantizar unicidad en TODAS las posibles instancias</span></div>
+      <div class="quiz-opt" data-val="c" onclick="selectOpt(this)"><span class="opt-marker">C</span><span>Sí, si combinamos name con dept_name</span></div>
+    </div>
+    <div class="quiz-feedback" id="fb-q2-2b"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkQuiz('q2-2b','b','Correcto. La clave primaria debe garantizar unicidad en TODAS las posibles instancias, no solo en la actual. Es perfectamente posible que dos instructores tengan el mismo nombre.','La clave primaria debe funcionar para TODAS las instancias posibles. Dos instructores distintos podrían compartir nombre.')">Verificar</button></div>
+  </div>
+
+  <div class="quiz-card" data-quiz="q2-2c">
+    <div class="q-header"><span class="q-badge tf">Verdadero / Falso</span></div>
+    <div class="q-text">Una clave foránea debe referenciar la clave primaria de la relación referenciada.</div>
+    <div class="tf-options">
+      <div class="tf-btn" onclick="selectTF(this,'q2-2c')" data-val="true">Verdadero</div>
+      <div class="tf-btn" onclick="selectTF(this,'q2-2c')" data-val="false">Falso</div>
+    </div>
+    <div class="quiz-feedback" id="fb-q2-2c"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkTF('q2-2c','true','Correcto. Por definición, una foreign key referencia la clave primaria. Una restricción de integridad referencial más general puede referenciar atributos que no sean clave primaria.','VERDADERO. Una foreign key constraint referencia la clave primaria de la relación referenciada por definición.')">Verificar</button></div>
+  </div>
+</div>
+
+<!-- 2.4-2.6 -->
+<div class="section" id="s2-4">
+  <h2>2.4-2.6 Álgebra Relacional</h2>
+  <p>Base teórica de SQL. Define operaciones que toman relaciones como entrada y producen nuevas relaciones.</p>
+
+  <h3>Operaciones Unarias</h3>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Operación</th><th>Símbolo</th><th>Descripción</th><th>Ejemplo</th></tr></thead>
+    <tbody>
+      <tr><td>Selección</td><td>σ</td><td>Filtra tuplas que satisfacen un predicado</td><td>σ<sub>dept='Physics'</sub>(instructor)</td></tr>
+      <tr><td>Proyección</td><td>Π</td><td>Retiene solo ciertos atributos (columnas)</td><td>Π<sub>ID,name</sub>(instructor)</td></tr>
+      <tr><td>Renombramiento</td><td>ρ</td><td>Renombra relación o atributos</td><td>ρ<sub>x</sub>(E)</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Operaciones Binarias</h3>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Operación</th><th>Símbolo</th><th>Descripción</th></tr></thead>
+    <tbody>
+      <tr><td>Producto Cartesiano</td><td>×</td><td>Combina cada tupla de r1 con cada tupla de r2</td></tr>
+      <tr><td>Join</td><td>⋈</td><td>Combina tuplas que satisfacen una condición (= σ<sub>θ</sub>(r1 × r2))</td></tr>
+      <tr><td>Unión</td><td>∪</td><td>Tuplas en r1 O en r2</td></tr>
+      <tr><td>Intersección</td><td>∩</td><td>Tuplas en r1 Y en r2</td></tr>
+      <tr><td>Diferencia</td><td>−</td><td>Tuplas en r1 pero NO en r2</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout info">
+    <strong>📌 Composición:</strong> Como el resultado de cada operación es una relación, se pueden componer: <code>Π<sub>name</sub>(σ<sub>dept='Physics'</sub>(instructor))</code> — primero selecciona, luego proyecta.
+  </div>
+
+  <!-- Matching: operadores -->
+  <div class="quiz-card" data-quiz="match2-4">
+    <div class="q-header"><span class="q-badge match">Emparejar</span></div>
+    <div class="q-text">Empareja cada símbolo de álgebra relacional con su operación:</div>
+    <div class="match-exercise" id="match2-4">
+      <div class="match-cols">
+        <div class="match-col">
+          <h4>Símbolo</h4>
+          <div class="match-item" data-match="left" data-pair="1" onclick="selectMatch(this,'match2-4')">σ</div>
+          <div class="match-item" data-match="left" data-pair="2" onclick="selectMatch(this,'match2-4')">Π</div>
+          <div class="match-item" data-match="left" data-pair="3" onclick="selectMatch(this,'match2-4')">⋈</div>
+          <div class="match-item" data-match="left" data-pair="4" onclick="selectMatch(this,'match2-4')">−</div>
+        </div>
+        <div class="match-col">
+          <h4>Operación</h4>
+          <div class="match-item" data-match="right" data-pair="3" onclick="selectMatch(this,'match2-4')">Join (combinación con condición)</div>
+          <div class="match-item" data-match="right" data-pair="1" onclick="selectMatch(this,'match2-4')">Selección (filtrar por predicado)</div>
+          <div class="match-item" data-match="right" data-pair="4" onclick="selectMatch(this,'match2-4')">Diferencia de conjuntos</div>
+          <div class="match-item" data-match="right" data-pair="2" onclick="selectMatch(this,'match2-4')">Proyección (columnas)</div>
+        </div>
+      </div>
+    </div>
+    <div class="quiz-feedback" id="fb-match2-4"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkMatch('match2-4')">Verificar</button><button class="btn btn-secondary" onclick="resetMatch('match2-4')">Reiniciar</button></div>
+  </div>
+
+  <div class="quiz-card" data-quiz="q2-4a">
+    <div class="q-header"><span class="q-badge tf">Verdadero / Falso</span></div>
+    <div class="q-text">El resultado de una operación de álgebra relacional es siempre una relación.</div>
+    <div class="tf-options">
+      <div class="tf-btn" onclick="selectTF(this,'q2-4a')" data-val="true">Verdadero</div>
+      <div class="tf-btn" onclick="selectTF(this,'q2-4a')" data-val="false">Falso</div>
+    </div>
+    <div class="quiz-feedback" id="fb-q2-4a"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkTF('q2-4a','true','Correcto. Esta propiedad fundamental permite componer operaciones: cada resultado es una relación que puede usarse como entrada de otra.','VERDADERO. La clausura (closure) es propiedad fundamental del álgebra relacional.')">Verificar</button></div>
+  </div>
+
+  <div class="quiz-card" data-quiz="q2-4b">
+    <div class="q-header"><span class="q-badge mc">Opción múltiple</span></div>
+    <div class="q-text">¿Por qué el producto cartesiano sin condición de selección es inútil en la práctica?</div>
+    <div class="quiz-options">
+      <div class="quiz-opt" data-val="a" onclick="selectOpt(this)"><span class="opt-marker">A</span><span>Porque combina TODAS las tuplas sin criterio de relación, generando combinaciones sin sentido</span></div>
+      <div class="quiz-opt" data-val="b" onclick="selectOpt(this)"><span class="opt-marker">B</span><span>Porque elimina todas las tuplas duplicadas</span></div>
+      <div class="quiz-opt" data-val="c" onclick="selectOpt(this)"><span class="opt-marker">C</span><span>Porque solo funciona con relaciones del mismo esquema</span></div>
+    </div>
+    <div class="quiz-feedback" id="fb-q2-4b"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkQuiz('q2-4b','a','Correcto. Con 200 instructores y 600 cursos, generaría 120,000 tuplas, la mayoría emparejando instructores con cursos que no enseñaron. El JOIN con condición es lo útil.','Combina TODAS las tuplas sin criterio, generando combinaciones sin sentido. Con 200×600 = 120,000 filas mayoritariamente irrelevantes.')">Verificar</button></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--                    CAPÍTULO 3                                 -->
+<!-- ============================================================ -->
+<div class="chapter-divider" id="cap3">
+  <div class="cd-num">Capítulo 3</div>
+  <h2>Introducción a SQL</h2>
+</div>
+
+<!-- 3.1-3.2 -->
+<div class="section" id="s3-1">
+  <h2>3.1-3.2 DDL — Definición de Datos</h2>
+
+  <h3>Tipos de datos básicos</h3>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Tipo</th><th>Descripción</th></tr></thead>
+    <tbody>
+      <tr><td><code>char(n)</code></td><td>Cadena de longitud fija n</td></tr>
+      <tr><td><code>varchar(n)</code></td><td>Cadena de longitud variable, máximo n</td></tr>
+      <tr><td><code>int / integer</code></td><td>Entero</td></tr>
+      <tr><td><code>numeric(p,d)</code></td><td>Número de punto fijo (p dígitos, d decimales)</td></tr>
+      <tr><td><code>real / double precision</code></td><td>Punto flotante</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>CREATE TABLE</h3>
+  <pre><code><span class="kw">CREATE TABLE</span> department (
+    dept_name  <span class="fn">VARCHAR</span>(<span class="num">20</span>),
+    building   <span class="fn">VARCHAR</span>(<span class="num">15</span>),
+    budget     <span class="fn">NUMERIC</span>(<span class="num">12</span>,<span class="num">2</span>),
+    <span class="kw">PRIMARY KEY</span> (dept_name)
+);</code></pre>
+
+  <h3>Restricciones en CREATE TABLE</h3>
+  <ul>
+    <li><strong>PRIMARY KEY (A1, A2, …):</strong> No nulos y únicos.</li>
+    <li><strong>FOREIGN KEY (A1, …) REFERENCES s:</strong> Clave foránea hacia la PK de s.</li>
+    <li><strong>NOT NULL:</strong> El atributo no puede ser nulo.</li>
+  </ul>
+
+  <h3>Otras instrucciones DDL</h3>
+  <ul>
+    <li><code>DROP TABLE r</code> — Elimina tabla y datos.</li>
+    <li><code>DELETE FROM r</code> — Elimina datos pero conserva esquema.</li>
+    <li><code>ALTER TABLE r ADD A D</code> — Agrega atributo A de tipo D.</li>
+    <li><code>ALTER TABLE r DROP A</code> — Elimina atributo A.</li>
+  </ul>
+
+  <!-- Fill in blanks DDL -->
+  <div class="quiz-card" data-quiz="fill3-1">
+    <div class="q-header"><span class="q-badge fill">Completar</span></div>
+    <div class="q-text">Completa la sentencia DDL para crear la tabla <code>course</code>:</div>
+    <pre><code><input class="fill-input" id="fill3-1a" data-answer="CREATE TABLE" placeholder="???"> course (
+    course_id  VARCHAR(8),
+    title      VARCHAR(50),
+    dept_name  VARCHAR(20),
+    credits    NUMERIC(2,0),
+    <input class="fill-input" id="fill3-1b" data-answer="PRIMARY KEY" placeholder="???"> (course_id),
+    <input class="fill-input" id="fill3-1c" data-answer="FOREIGN KEY" placeholder="???"> (dept_name) REFERENCES department
+);</code></pre>
+    <div class="quiz-feedback" id="fb-fill3-1"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkFill('fill3-1',['fill3-1a','fill3-1b','fill3-1c'])">Verificar</button></div>
+  </div>
+</div>
+
+<!-- 3.3-3.4 -->
+<div class="section" id="s3-3">
+  <h2>3.3-3.4 Consultas SQL Básicas</h2>
+
+  <h3>La consulta SELECT-FROM-WHERE</h3>
+  <pre><code><span class="kw">SELECT</span> A1, A2, ..., An
+<span class="kw">FROM</span>   r1, r2, ..., rm
+<span class="kw">WHERE</span>  P;</code></pre>
+  <p><strong>Orden de ejecución semántica:</strong> FROM (producto cartesiano) → WHERE (filtro) → SELECT (proyección).</p>
+
+  <pre><code><span class="kw">SELECT</span> name
+<span class="kw">FROM</span> instructor
+<span class="kw">WHERE</span> dept_name = <span class="str">'Comp. Sci.'</span> <span class="kw">AND</span> salary > <span class="num">70000</span>;</code></pre>
+
+  <h3>Duplicados, expresiones y renombramiento</h3>
+  <ul>
+    <li><code>SELECT DISTINCT</code> — Elimina duplicados.</li>
+    <li><code>SELECT ALL</code> — Retiene duplicados (default).</li>
+    <li><code>salary * 1.1</code> — Expresiones aritméticas en SELECT.</li>
+    <li><code>AS</code> — Renombra atributos o relaciones (<strong>alias</strong>).</li>
+  </ul>
+
+  <h3>Operaciones con cadenas — LIKE</h3>
+  <ul>
+    <li><code>%</code> — Coincide con cualquier subcadena.</li>
+    <li><code>_</code> — Coincide con exactamente un carácter.</li>
+  </ul>
+  <pre><code><span class="kw">SELECT</span> dept_name <span class="kw">FROM</span> department
+<span class="kw">WHERE</span> building <span class="kw">LIKE</span> <span class="str">'%Watson%'</span>;</code></pre>
+
+  <h3>ORDER BY y BETWEEN</h3>
+  <pre><code><span class="kw">SELECT</span> * <span class="kw">FROM</span> instructor
+<span class="kw">ORDER BY</span> salary <span class="kw">DESC</span>, name <span class="kw">ASC</span>;
+
+<span class="kw">SELECT</span> name <span class="kw">FROM</span> instructor
+<span class="kw">WHERE</span> salary <span class="kw">BETWEEN</span> <span class="num">90000</span> <span class="kw">AND</span> <span class="num">100000</span>;</code></pre>
+
+  <!-- SQL writing exercise -->
+  <div class="quiz-card" data-quiz="code3-3a">
+    <div class="q-header"><span class="q-badge code">Escribir SQL</span></div>
+    <div class="q-text">Escribe una consulta SQL para encontrar los <strong>nombres y salarios</strong> de todos los instructores cuyo salario está entre $70,000 y $100,000.</div>
+    <textarea class="code-editor" id="code3-3a" rows="3" placeholder="SELECT ..."></textarea>
+    <div class="quiz-feedback" id="fb-code3-3a"></div>
+    <div class="quiz-actions">
+      <button class="btn btn-primary" onclick="checkSQL('code3-3a',['select','name','salary','from','instructor','where','between 70000 and 100000|salary >= 70000 and salary <= 100000|salary>=70000 and salary<=100000'],'SELECT name, salary FROM instructor WHERE salary BETWEEN 70000 AND 100000;')">Verificar</button>
+      <button class="btn btn-secondary" onclick="showAnswer('code3-3a','SELECT name, salary\nFROM instructor\nWHERE salary BETWEEN 70000 AND 100000;')">Ver respuesta</button>
+    </div>
+  </div>
+</div>
+
+<!-- 3.5-3.6 -->
+<div class="section" id="s3-5">
+  <h2>3.5-3.6 Operaciones de Conjuntos y NULL</h2>
+
+  <h3>Operaciones de Conjuntos</h3>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>SQL</th><th>Álgebra</th><th>Duplicados</th><th>Variante con duplicados</th></tr></thead>
+    <tbody>
+      <tr><td><code>UNION</code></td><td>∪</td><td>Elimina</td><td><code>UNION ALL</code></td></tr>
+      <tr><td><code>INTERSECT</code></td><td>∩</td><td>Elimina</td><td><code>INTERSECT ALL</code></td></tr>
+      <tr><td><code>EXCEPT</code></td><td>−</td><td>Elimina</td><td><code>EXCEPT ALL</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Valores Nulos (NULL)</h3>
+  <ul>
+    <li><strong>Aritmética:</strong> <code>NULL + 5 = NULL</code></li>
+    <li><strong>Comparaciones:</strong> Cualquier comparación con null → <code>UNKNOWN</code></li>
+    <li><strong>WHERE:</strong> Solo incluye tuplas donde el predicado es TRUE (excluye false y unknown).</li>
+    <li><strong>Verificar nulls:</strong> <code>IS NULL</code> / <code>IS NOT NULL</code></li>
+  </ul>
+
+  <div class="callout danger">
+    <strong>⚠️ Cuidado:</strong> <code>NULL = NULL</code> NO es TRUE, es UNKNOWN. Para verificar si algo es null siempre usa <code>IS NULL</code>.
+  </div>
+
+  <div class="quiz-card" data-quiz="q3-5a">
+    <div class="q-header"><span class="q-badge tf">Verdadero / Falso</span></div>
+    <div class="q-text">UNION y UNION ALL producen siempre el mismo resultado.</div>
+    <div class="tf-options">
+      <div class="tf-btn" onclick="selectTF(this,'q3-5a')" data-val="true">Verdadero</div>
+      <div class="tf-btn" onclick="selectTF(this,'q3-5a')" data-val="false">Falso</div>
+    </div>
+    <div class="quiz-feedback" id="fb-q3-5a"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkTF('q3-5a','false','Correcto. UNION elimina duplicados; UNION ALL retiene todos los duplicados. Si hay tuplas en común, los resultados diferirán.','FALSO. UNION elimina duplicados automáticamente; UNION ALL retiene todos. Si hay tuplas en común, los resultados son distintos.')">Verificar</button></div>
+  </div>
+
+  <div class="quiz-card" data-quiz="q3-5b">
+    <div class="q-header"><span class="q-badge tf">Verdadero / Falso</span></div>
+    <div class="q-text">En SQL, la comparación <code>NULL = NULL</code> evalúa a TRUE.</div>
+    <div class="tf-options">
+      <div class="tf-btn" onclick="selectTF(this,'q3-5b')" data-val="true">Verdadero</div>
+      <div class="tf-btn" onclick="selectTF(this,'q3-5b')" data-val="false">Falso</div>
+    </div>
+    <div class="quiz-feedback" id="fb-q3-5b"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkTF('q3-5b','false','Correcto. Cualquier comparación con NULL resulta en UNKNOWN. Debes usar IS NULL para esta verificación.','FALSO. En SQL, NULL = NULL resulta en UNKNOWN. Para verificar nulls usa IS NULL.')">Verificar</button></div>
+  </div>
+</div>
+
+<!-- 3.7 -->
+<div class="section" id="s3-7">
+  <h2>3.7 Funciones Agregadas y GROUP BY</h2>
+
+  <h3>Funciones Agregadas</h3>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Función</th><th>Descripción</th><th>Ejemplo</th></tr></thead>
+    <tbody>
+      <tr><td><code>avg()</code></td><td>Promedio</td><td><code>avg(salary)</code></td></tr>
+      <tr><td><code>min()</code></td><td>Valor mínimo</td><td><code>min(salary)</code></td></tr>
+      <tr><td><code>max()</code></td><td>Valor máximo</td><td><code>max(salary)</code></td></tr>
+      <tr><td><code>sum()</code></td><td>Suma total</td><td><code>sum(salary)</code></td></tr>
+      <tr><td><code>count()</code></td><td>Cuenta tuplas</td><td><code>count(*)</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>GROUP BY y HAVING</h3>
+  <pre><code><span class="kw">SELECT</span> dept_name, <span class="fn">avg</span>(salary) <span class="kw">AS</span> avg_salary
+<span class="kw">FROM</span> instructor
+<span class="kw">GROUP BY</span> dept_name
+<span class="kw">HAVING</span> <span class="fn">avg</span>(salary) > <span class="num">42000</span>;</code></pre>
+
+  <div class="callout danger">
+    <strong>⚠️ REGLA CRÍTICA:</strong> Los atributos en SELECT que NO son agregados DEBEN estar en GROUP BY. Sin excepción.
+  </div>
+
+  <p><strong>Orden de ejecución lógico:</strong> FROM → WHERE → GROUP BY → HAVING → SELECT</p>
+
+  <div class="quiz-card" data-quiz="q3-7a">
+    <div class="q-header"><span class="q-badge mc">Opción múltiple</span></div>
+    <div class="q-text">¿Cuál es la diferencia entre WHERE y HAVING?</div>
+    <div class="quiz-options">
+      <div class="quiz-opt" data-val="a" onclick="selectOpt(this)"><span class="opt-marker">A</span><span>WHERE filtra filas individuales ANTES de agrupar; HAVING filtra GRUPOS después de agrupar</span></div>
+      <div class="quiz-opt" data-val="b" onclick="selectOpt(this)"><span class="opt-marker">B</span><span>WHERE y HAVING son sinónimos y pueden intercambiarse</span></div>
+      <div class="quiz-opt" data-val="c" onclick="selectOpt(this)"><span class="opt-marker">C</span><span>WHERE se usa para agregados; HAVING para filas individuales</span></div>
+    </div>
+    <div class="quiz-feedback" id="fb-q3-7a"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkQuiz('q3-7a','a','Correcto. WHERE filtra ANTES del GROUP BY (filas individuales). HAVING filtra DESPUÉS del GROUP BY (grupos completos).','WHERE filtra filas individuales ANTES de agrupar. HAVING filtra GRUPOS después de agrupar. No son intercambiables.')">Verificar</button></div>
+  </div>
+
+  <!-- SQL exercise: GROUP BY + HAVING -->
+  <div class="quiz-card" data-quiz="code3-7a">
+    <div class="q-header"><span class="q-badge code">Escribir SQL</span></div>
+    <div class="q-text">Escribe la consulta para encontrar el <strong>promedio de salarios por departamento</strong>, mostrando solo los departamentos con promedio mayor a $80,000.</div>
+    <textarea class="code-editor" id="code3-7a" rows="4" placeholder="SELECT ..."></textarea>
+    <div class="quiz-feedback" id="fb-code3-7a"></div>
+    <div class="quiz-actions">
+      <button class="btn btn-primary" onclick="checkSQL('code3-7a',['select','dept_name','avg','salary','from','instructor','group by','dept_name','having','80000'],'SELECT dept_name, avg(salary) AS avg_salary\nFROM instructor\nGROUP BY dept_name\nHAVING avg(salary) > 80000;')">Verificar</button>
+      <button class="btn btn-secondary" onclick="showAnswer('code3-7a','SELECT dept_name, avg(salary) AS avg_salary\nFROM instructor\nGROUP BY dept_name\nHAVING avg(salary) > 80000;')">Ver respuesta</button>
+    </div>
+  </div>
+</div>
+
+<!-- 3.8 -->
+<div class="section" id="s3-8">
+  <h2>3.8 Subconsultas Anidadas</h2>
+
+  <h3>IN y NOT IN</h3>
+  <pre><code><span class="kw">SELECT DISTINCT</span> course_id <span class="kw">FROM</span> section
+<span class="kw">WHERE</span> semester=<span class="str">'Fall'</span> <span class="kw">AND</span> year=<span class="num">2017</span> <span class="kw">AND</span>
+      course_id <span class="kw">IN</span> (<span class="kw">SELECT</span> course_id <span class="kw">FROM</span> section
+                   <span class="kw">WHERE</span> semester=<span class="str">'Spring'</span> <span class="kw">AND</span> year=<span class="num">2018</span>);</code></pre>
+
+  <h3>SOME y ALL</h3>
+  <ul>
+    <li><code>= SOME</code> equivale a <code>IN</code>.</li>
+    <li><code>&lt;&gt; ALL</code> equivale a <code>NOT IN</code>.</li>
+    <li><code>&gt; SOME</code> → mayor que AL MENOS uno.</li>
+    <li><code>&gt; ALL</code> → mayor que TODOS.</li>
+  </ul>
+
+  <h3>EXISTS y NOT EXISTS</h3>
+  <pre><code><span class="cm">-- Instructores que enseñan algún curso de Biología:</span>
+<span class="kw">SELECT</span> name <span class="kw">FROM</span> instructor I
+<span class="kw">WHERE EXISTS</span> (<span class="kw">SELECT</span> * <span class="kw">FROM</span> teaches T
+             <span class="kw">WHERE</span> T.ID = I.ID <span class="kw">AND</span> T.course_id <span class="kw">LIKE</span> <span class="str">'BIO%'</span>);</code></pre>
+
+  <h3>Subconsultas en FROM y WITH</h3>
+  <pre><code><span class="kw">WITH</span> max_budget(value) <span class="kw">AS</span>
+    (<span class="kw">SELECT MAX</span>(budget) <span class="kw">FROM</span> department)
+<span class="kw">SELECT</span> dept_name <span class="kw">FROM</span> department, max_budget
+<span class="kw">WHERE</span> department.budget = max_budget.value;</code></pre>
+
+  <div class="quiz-card" data-quiz="q3-8a">
+    <div class="q-header"><span class="q-badge tf">Verdadero / Falso</span></div>
+    <div class="q-text"><code>= SOME</code> es equivalente a <code>IN</code> en SQL.</div>
+    <div class="tf-options">
+      <div class="tf-btn" onclick="selectTF(this,'q3-8a')" data-val="true">Verdadero</div>
+      <div class="tf-btn" onclick="selectTF(this,'q3-8a')" data-val="false">Falso</div>
+    </div>
+    <div class="quiz-feedback" id="fb-q3-8a"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkTF('q3-8a','true','Correcto. = SOME (o = ANY) verifica si el valor es igual a algún elemento del conjunto, exactamente lo que hace IN.','VERDADERO. = SOME y IN verifican lo mismo: que el valor sea igual a algún elemento del conjunto.')">Verificar</button></div>
+  </div>
+
+  <div class="quiz-card" data-quiz="code3-8a">
+    <div class="q-header"><span class="q-badge code">Escribir SQL</span></div>
+    <div class="q-text">Encuentra los nombres de todos los instructores que ganan más que <strong>al menos un</strong> instructor del departamento de Biología (usa subconsulta con SOME).</div>
+    <textarea class="code-editor" id="code3-8a" rows="3" placeholder="SELECT ..."></textarea>
+    <div class="quiz-feedback" id="fb-code3-8a"></div>
+    <div class="quiz-actions">
+      <button class="btn btn-primary" onclick="checkSQL('code3-8a',['select','name','from','instructor','where','salary','>','some','select','salary','biology'],'SELECT name FROM instructor\nWHERE salary > SOME\n  (SELECT salary FROM instructor WHERE dept_name = \'Biology\');')">Verificar</button>
+      <button class="btn btn-secondary" onclick="showAnswer('code3-8a','SELECT name FROM instructor\nWHERE salary > SOME\n  (SELECT salary FROM instructor\n   WHERE dept_name = \'Biology\');')">Ver respuesta</button>
+    </div>
+  </div>
+</div>
+
+<!-- 3.9 -->
+<div class="section" id="s3-9">
+  <h2>3.9 Modificación de la Base de Datos</h2>
+
+  <h3>DELETE</h3>
+  <pre><code><span class="kw">DELETE FROM</span> instructor <span class="kw">WHERE</span> dept_name = <span class="str">'Finance'</span>;</code></pre>
+
+  <h3>INSERT</h3>
+  <pre><code><span class="kw">INSERT INTO</span> course <span class="kw">VALUES</span> (<span class="str">'CS-437'</span>, <span class="str">'Database Systems'</span>, <span class="str">'Comp. Sci.'</span>, <span class="num">4</span>);
+
+<span class="cm">-- Insertar resultado de consulta:</span>
+<span class="kw">INSERT INTO</span> instructor
+    <span class="kw">SELECT</span> ID, name, dept_name, <span class="num">18000</span>
+    <span class="kw">FROM</span> student <span class="kw">WHERE</span> dept_name = <span class="str">'Music'</span> <span class="kw">AND</span> tot_cred > <span class="num">144</span>;</code></pre>
+
+  <h3>UPDATE con CASE</h3>
+  <pre><code><span class="kw">UPDATE</span> instructor
+<span class="kw">SET</span> salary = <span class="kw">CASE</span>
+    <span class="kw">WHEN</span> salary &lt;= <span class="num">100000</span> <span class="kw">THEN</span> salary * <span class="num">1.05</span>
+    <span class="kw">ELSE</span> salary * <span class="num">1.03</span>
+<span class="kw">END</span>;</code></pre>
+
+  <div class="quiz-card" data-quiz="q3-9a">
+    <div class="q-header"><span class="q-badge mc">Opción múltiple</span></div>
+    <div class="q-text">¿Cuál es el resultado de <code>SELECT avg(salary) FROM instructor</code> si algunos instructores tienen salary = NULL?</div>
+    <div class="quiz-options">
+      <div class="quiz-opt" data-val="a" onclick="selectOpt(this)"><span class="opt-marker">A</span><span>Error: no se puede calcular avg con nulls</span></div>
+      <div class="quiz-opt" data-val="b" onclick="selectOpt(this)"><span class="opt-marker">B</span><span>avg IGNORA los nulls y calcula el promedio solo sobre los valores definidos</span></div>
+      <div class="quiz-opt" data-val="c" onclick="selectOpt(this)"><span class="opt-marker">C</span><span>Los null se tratan como 0 en el cálculo</span></div>
+    </div>
+    <div class="quiz-feedback" id="fb-q3-9a"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkQuiz('q3-9a','b','Correcto. Las funciones agregadas (excepto count(*)) ignoran los valores null. El resultado es el promedio solo sobre salarios definidos.','avg() IGNORA los valores null. El resultado es el promedio calculado solo sobre los instructores que SÍ tienen salario definido.')">Verificar</button></div>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!--                    CAPÍTULO 4                                 -->
+<!-- ============================================================ -->
+<div class="chapter-divider" id="cap4">
+  <div class="cd-num">Capítulo 4</div>
+  <h2>SQL Intermedio</h2>
+</div>
+
+<!-- 4.1 -->
+<div class="section" id="s4-1">
+  <h2>4.1 Expresiones JOIN</h2>
+
+  <h3>Natural Join</h3>
+  <p>Combina tuplas que tienen el mismo valor en atributos con el mismo nombre. Los atributos comunes aparecen solo una vez en el resultado.</p>
+
+  <div class="callout danger">
+    <strong>⚠️ PELIGRO:</strong> Si dos relaciones tienen un atributo de mismo nombre que NO deberías igualar, produce resultados incorrectos. Ejemplo: <code>student NATURAL JOIN takes NATURAL JOIN course</code> igualaría dept_name de student con dept_name de course.
+  </div>
+
+  <h3>JOIN USING y JOIN ON</h3>
+  <pre><code><span class="cm">-- USING: especifica explícitamente qué atributos igualar</span>
+<span class="kw">SELECT</span> name, title <span class="kw">FROM</span> (student <span class="kw">NATURAL JOIN</span> takes)
+  <span class="kw">JOIN</span> course <span class="kw">USING</span> (course_id);
+
+<span class="cm">-- ON: predicado de unión libre</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> student <span class="kw">JOIN</span> takes <span class="kw">ON</span> student.ID = takes.ID;</code></pre>
+
+  <h3>Outer Joins</h3>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Tipo</th><th>Preserva</th><th>Ejemplo de uso</th></tr></thead>
+    <tbody>
+      <tr><td><strong>LEFT OUTER JOIN</strong></td><td>TODAS las tuplas de la tabla IZQUIERDA</td><td>Encontrar estudiantes sin cursos</td></tr>
+      <tr><td><strong>RIGHT OUTER JOIN</strong></td><td>TODAS las tuplas de la tabla DERECHA</td><td>Simétrico al LEFT</td></tr>
+      <tr><td><strong>FULL OUTER JOIN</strong></td><td>Tuplas de AMBAS tablas</td><td>Unión completa con nulls</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <pre><code><span class="cm">-- Estudiantes que NO han tomado ningún curso:</span>
+<span class="kw">SELECT</span> ID <span class="kw">FROM</span> student
+  <span class="kw">NATURAL LEFT OUTER JOIN</span> takes
+<span class="kw">WHERE</span> course_id <span class="kw">IS NULL</span>;</code></pre>
+
+  <div class="quiz-card" data-quiz="q4-1a">
+    <div class="q-header"><span class="q-badge mc">Opción múltiple</span></div>
+    <div class="q-text">¿Por qué <code>student NATURAL JOIN takes NATURAL JOIN course</code> puede dar un resultado incorrecto?</div>
+    <div class="quiz-options">
+      <div class="quiz-opt" data-val="a" onclick="selectOpt(this)"><span class="opt-marker">A</span><span>Porque student y course comparten dept_name, y el natural join igualaría ese atributo, excluyendo estudiantes que toman cursos de otros departamentos</span></div>
+      <div class="quiz-opt" data-val="b" onclick="selectOpt(this)"><span class="opt-marker">B</span><span>Porque el natural join no puede encadenar tres relaciones</span></div>
+      <div class="quiz-opt" data-val="c" onclick="selectOpt(this)"><span class="opt-marker">C</span><span>Porque takes no tiene atributos en común con course</span></div>
+    </div>
+    <div class="quiz-feedback" id="fb-q4-1a"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkQuiz('q4-1a','a','Correcto. student y course comparten dept_name. El NATURAL JOIN igualaría ambos, excluyendo a un estudiante de Física tomando un curso de Matemáticas. La solución: JOIN course USING (course_id).','student y course comparten dept_name. El NATURAL JOIN lo iguala incorrectamente. Usa JOIN course USING (course_id) en su lugar.')">Verificar</button></div>
+  </div>
+
+  <div class="quiz-card" data-quiz="code4-1a">
+    <div class="q-header"><span class="q-badge code">Escribir SQL</span></div>
+    <div class="q-text">Escribe la consulta para mostrar <strong>todos los estudiantes</strong> y los cursos que han tomado. Los estudiantes sin cursos también deben aparecer (con null).</div>
+    <textarea class="code-editor" id="code4-1a" rows="3" placeholder="SELECT ..."></textarea>
+    <div class="quiz-feedback" id="fb-code4-1a"></div>
+    <div class="quiz-actions">
+      <button class="btn btn-primary" onclick="checkSQL('code4-1a',['select','from','student','left outer join|left join','takes','on'],'SELECT s.ID, s.name, t.course_id, t.semester, t.year\nFROM student s LEFT OUTER JOIN takes t ON s.ID = t.ID;')">Verificar</button>
+      <button class="btn btn-secondary" onclick="showAnswer('code4-1a','SELECT s.ID, s.name, t.course_id, t.semester, t.year\nFROM student s LEFT OUTER JOIN takes t\n  ON s.ID = t.ID;')">Ver respuesta</button>
+    </div>
+  </div>
+</div>
+
+<!-- 4.2 -->
+<div class="section" id="s4-2">
+  <h2>4.2 Vistas (Views)</h2>
+
+  <p>Una <strong>vista</strong> es una relación virtual definida por una consulta. No almacena datos, se recalcula cada vez que se usa.</p>
+
+  <pre><code><span class="kw">CREATE VIEW</span> faculty <span class="kw">AS</span>
+    <span class="kw">SELECT</span> ID, name, dept_name <span class="kw">FROM</span> instructor;</code></pre>
+
+  <h3>Beneficios</h3>
+  <ul>
+    <li><strong>Seguridad:</strong> Ocultan datos sensibles (ej: salario).</li>
+    <li><strong>Simplificación:</strong> Perspectiva más sencilla para ciertos usuarios.</li>
+    <li><strong>Independencia lógica:</strong> Si el esquema cambia, se actualiza la vista.</li>
+  </ul>
+
+  <h3>Vista Materializada</h3>
+  <p>Almacena el resultado precomputado. Consultarla es rápido, pero mantenerla actualizada tiene costo (<strong>view maintenance</strong>).</p>
+
+  <h3>Vista Actualizable</h3>
+  <p>Una vista es actualizable SOLO si cumple TODAS estas condiciones:</p>
+  <ol>
+    <li>FROM tiene solo una relación de la BD.</li>
+    <li>SELECT contiene solo nombres de atributos (no expresiones, agregados, DISTINCT).</li>
+    <li>Atributos no en SELECT pueden ser nulos.</li>
+    <li>No tiene GROUP BY ni HAVING.</li>
+  </ol>
+
+  <div class="quiz-card" data-quiz="q4-2a">
+    <div class="q-header"><span class="q-badge tf">Verdadero / Falso</span></div>
+    <div class="q-text">Una vista siempre refleja los datos más recientes de las relaciones subyacentes.</div>
+    <div class="tf-options">
+      <div class="tf-btn" onclick="selectTF(this,'q4-2a')" data-val="true">Verdadero</div>
+      <div class="tf-btn" onclick="selectTF(this,'q4-2a')" data-val="false">Falso</div>
+    </div>
+    <div class="quiz-feedback" id="fb-q4-2a"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkTF('q4-2a','true','Correcto. Las vistas normales (no materializadas) recalculan cada vez que son consultadas, reflejando siempre el estado actual.','VERDADERO. Las vistas normales se recalculan en cada consulta, por lo que siempre reflejan los datos actuales.')">Verificar</button></div>
+  </div>
+</div>
+
+<!-- 4.3 -->
+<div class="section" id="s4-3">
+  <h2>4.3 Transacciones</h2>
+
+  <p>Una transacción es una secuencia de instrucciones SQL que forman una unidad lógica de trabajo.</p>
+  <ul>
+    <li><strong>COMMIT:</strong> Hace permanentes todos los cambios.</li>
+    <li><strong>ROLLBACK:</strong> Deshace todos los cambios de la transacción actual.</li>
+  </ul>
+
+  <div class="callout warning">
+    <strong>⚠️ Consejo:</strong> En la mayoría de sistemas (MySQL, PostgreSQL) cada instrucción SQL es su propia transacción por defecto (autocommit). En Oracle, el autocommit <strong>NO</strong> está activado — si olvidas COMMIT, los cambios se revertirán al desconectarte.
+  </div>
+</div>
+
+<!-- 4.4 -->
+<div class="section" id="s4-4">
+  <h2>4.4 Restricciones de Integridad</h2>
+
+  <h3>Restricciones en Relaciones Individuales</h3>
+  <ul>
+    <li><strong>NOT NULL:</strong> Prohíbe valores nulos.</li>
+    <li><strong>UNIQUE:</strong> Superclave — no duplicados. A diferencia de PK, permite nulls.</li>
+    <li><strong>CHECK (P):</strong> Cada tupla debe satisfacer el predicado P.</li>
+  </ul>
+
+  <pre><code>semester <span class="fn">VARCHAR</span>(<span class="num">6</span>) <span class="kw">CHECK</span> (semester <span class="kw">IN</span> (<span class="str">'Fall'</span>, <span class="str">'Winter'</span>, <span class="str">'Spring'</span>, <span class="str">'Summer'</span>))</code></pre>
+
+  <h3>Integridad Referencial (Foreign Keys)</h3>
+  <pre><code><span class="kw">FOREIGN KEY</span> (dept_name) <span class="kw">REFERENCES</span> department
+  <span class="kw">ON DELETE CASCADE</span>
+  <span class="kw">ON UPDATE CASCADE</span></code></pre>
+
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Opción</th><th>Efecto al eliminar/actualizar en tabla referenciada</th></tr></thead>
+    <tbody>
+      <tr><td><code>CASCADE</code></td><td>Propaga la operación a las tuplas referenciantes</td></tr>
+      <tr><td><code>SET NULL</code></td><td>Pone null en los atributos FK</td></tr>
+      <tr><td><code>SET DEFAULT</code></td><td>Pone el valor por defecto del dominio</td></tr>
+      <tr><td><em>(sin especificar)</em></td><td>REJECT: la operación falla con error</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="quiz-card" data-quiz="q4-4a">
+    <div class="q-header"><span class="q-badge tf">Verdadero / Falso</span></div>
+    <div class="q-text">ON DELETE CASCADE elimina automáticamente las tuplas referenciantes cuando se elimina una tupla referenciada.</div>
+    <div class="tf-options">
+      <div class="tf-btn" onclick="selectTF(this,'q4-4a')" data-val="true">Verdadero</div>
+      <div class="tf-btn" onclick="selectTF(this,'q4-4a')" data-val="false">Falso</div>
+    </div>
+    <div class="quiz-feedback" id="fb-q4-4a"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkTF('q4-4a','true','Correcto. ON DELETE CASCADE propaga la eliminación en cascada por toda la cadena de dependencias de claves foráneas.','VERDADERO. ON DELETE CASCADE elimina las tuplas que referencian a la tupla eliminada, propagándose en cadena.')">Verificar</button></div>
+  </div>
+
+  <div class="quiz-card" data-quiz="q4-4b">
+    <div class="q-header"><span class="q-badge tf">Verdadero / Falso</span></div>
+    <div class="q-text">UNIQUE y PRIMARY KEY son equivalentes en SQL.</div>
+    <div class="tf-options">
+      <div class="tf-btn" onclick="selectTF(this,'q4-4b')" data-val="true">Verdadero</div>
+      <div class="tf-btn" onclick="selectTF(this,'q4-4b')" data-val="false">Falso</div>
+    </div>
+    <div class="quiz-feedback" id="fb-q4-4b"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkTF('q4-4b','false','Correcto. PRIMARY KEY implica NOT NULL; UNIQUE permite nulls. Además, solo puede haber una PK pero múltiples UNIQUE.','FALSO. PRIMARY KEY implica NOT NULL; UNIQUE permite nulls. Una tabla puede tener múltiples UNIQUE pero solo una PK.')">Verificar</button></div>
+  </div>
+
+  <!-- DDL exercise -->
+  <div class="quiz-card" data-quiz="fill4-4">
+    <div class="q-header"><span class="q-badge fill">Completar</span></div>
+    <div class="q-text">Completa el DDL para la tabla section con la restricción CHECK que limita el semestre:</div>
+    <pre><code>CREATE TABLE section (
+    course_id    VARCHAR(8),
+    sec_id       VARCHAR(8),
+    semester     VARCHAR(6) <input class="fill-input" id="fill4-4a" data-answer="CHECK" placeholder="???"> (semester IN ('Fall','Winter','Spring','Summer')),
+    year         NUMERIC(4,0),
+    PRIMARY KEY (course_id, sec_id, semester, year),
+    <input class="fill-input" id="fill4-4b" data-answer="FOREIGN KEY" placeholder="???"> (course_id) REFERENCES course
+);</code></pre>
+    <div class="quiz-feedback" id="fb-fill4-4"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkFill('fill4-4',['fill4-4a','fill4-4b'])">Verificar</button></div>
+  </div>
+</div>
+
+<!-- 4.5-4.7 -->
+<div class="section" id="s4-5">
+  <h2>4.5-4.7 Tipos de Datos, Índices y Autorización</h2>
+
+  <h3>Tipos de datos temporales</h3>
+  <ul>
+    <li><code>date</code> — Fecha: <code>'2018-04-25'</code></li>
+    <li><code>time</code> — Hora: HH:MM:SS</li>
+    <li><code>timestamp</code> — Combinación de date y time</li>
+  </ul>
+
+  <h3>CAST y COALESCE</h3>
+  <pre><code><span class="kw">SELECT</span> <span class="fn">CAST</span>(ID <span class="kw">AS</span> <span class="fn">NUMERIC</span>(<span class="num">5</span>)) <span class="kw">AS</span> inst_id <span class="kw">FROM</span> instructor;
+<span class="kw">SELECT</span> ID, <span class="fn">COALESCE</span>(salary, <span class="num">0</span>) <span class="kw">AS</span> salary <span class="kw">FROM</span> instructor;</code></pre>
+
+  <h3>Índices</h3>
+  <pre><code><span class="kw">CREATE INDEX</span> dept_index <span class="kw">ON</span> instructor (dept_name);
+<span class="kw">DROP INDEX</span> dept_index;</code></pre>
+  <p>Estructura de datos que permite acceso eficiente sin escanear toda la tabla. Es parte del esquema <strong>físico</strong> (no lógico).</p>
+
+  <h3>Autorización</h3>
+  <p>Privilegios sobre datos: <strong>SELECT, INSERT, UPDATE, DELETE</strong>.</p>
+  <pre><code><span class="kw">GRANT SELECT ON</span> department <span class="kw">TO</span> Amit, Satoshi;
+<span class="kw">GRANT UPDATE</span> (budget) <span class="kw">ON</span> department <span class="kw">TO</span> Amit;
+<span class="kw">REVOKE SELECT ON</span> department <span class="kw">FROM</span> Amit;</code></pre>
+
+  <h3>Roles</h3>
+  <pre><code><span class="kw">CREATE ROLE</span> instructor;
+<span class="kw">GRANT SELECT ON</span> takes <span class="kw">TO</span> instructor;
+<span class="kw">GRANT</span> instructor <span class="kw">TO</span> Satoshi;  <span class="cm">-- Satoshi adquiere el rol</span></code></pre>
+
+  <div class="quiz-card" data-quiz="q4-5a">
+    <div class="q-header"><span class="q-badge mc">Opción múltiple</span></div>
+    <div class="q-text">¿Cuál es la ventaja de usar roles versus asignar privilegios directamente a usuarios?</div>
+    <div class="quiz-options">
+      <div class="quiz-opt" data-val="a" onclick="selectOpt(this)"><span class="opt-marker">A</span><span>Los roles son más rápidos de ejecutar</span></div>
+      <div class="quiz-opt" data-val="b" onclick="selectOpt(this)"><span class="opt-marker">B</span><span>Se define el conjunto de privilegios una vez en el rol, y al modificarlo se afecta a todos los usuarios con ese rol automáticamente</span></div>
+      <div class="quiz-opt" data-val="c" onclick="selectOpt(this)"><span class="opt-marker">C</span><span>Los roles permiten evadir las restricciones de integridad</span></div>
+    </div>
+    <div class="quiz-feedback" id="fb-q4-5a"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkQuiz('q4-5a','b','Correcto. Con roles, se definen los privilegios una vez y se asignan a múltiples usuarios. Si cambian los privilegios, se modifica solo el rol.','Los roles simplifican la gestión: se definen privilegios una vez, se asignan a muchos usuarios, y al cambiar el rol se actualizan todos.')">Verificar</button></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--                 EJERCICIOS INTEGRADOS                         -->
+<!-- ============================================================ -->
+<div class="chapter-divider" id="capInt">
+  <div class="cd-num">Integración</div>
+  <h2>Ejercicios Integrados — Todos los Capítulos</h2>
+</div>
+
+<div class="section" id="sInt">
+  <h2>Ejercicios de Mayor Complejidad</h2>
+
+  <!-- INT.3 -->
+  <div class="quiz-card" data-quiz="codeInt3">
+    <div class="q-header"><span class="q-badge code">Consulta avanzada</span></div>
+    <div class="q-text">Escribe una consulta SQL para encontrar los departamentos donde el instructor con <strong>mayor salario</strong> gana <strong>menos que</strong> el instructor con <strong>menor salario</strong> del departamento de Física.</div>
+    <textarea class="code-editor" id="codeInt3" rows="4" placeholder="SELECT ..."></textarea>
+    <div class="quiz-feedback" id="fb-codeInt3"></div>
+    <div class="quiz-actions">
+      <button class="btn btn-primary" onclick="checkSQL('codeInt3',['select','dept_name','from','instructor','group by','having','max','salary','<','select','min','salary','physics'],'SELECT dept_name FROM instructor\nGROUP BY dept_name\nHAVING MAX(salary) < (SELECT MIN(salary)\n  FROM instructor WHERE dept_name = \'Physics\');')">Verificar</button>
+      <button class="btn btn-secondary" onclick="showAnswer('codeInt3','SELECT dept_name FROM instructor\nGROUP BY dept_name\nHAVING MAX(salary) < (\n  SELECT MIN(salary) FROM instructor\n  WHERE dept_name = \'Physics\'\n);')">Ver respuesta</button>
+    </div>
+  </div>
+
+  <!-- INT.4 -->
+  <div class="quiz-card" data-quiz="codeInt4">
+    <div class="q-header"><span class="q-badge code">Subconsultas</span></div>
+    <div class="q-text">Escribe la consulta para encontrar los estudiantes que han tomado <strong>TODOS</strong> los cursos del departamento de Ciencias de la Computación. (Pista: usa NOT EXISTS + EXCEPT)</div>
+    <textarea class="code-editor" id="codeInt4" rows="6" placeholder="SELECT ..."></textarea>
+    <div class="quiz-feedback" id="fb-codeInt4"></div>
+    <div class="quiz-actions">
+      <button class="btn btn-primary" onclick="checkSQL('codeInt4',['select','student','not exists','except','takes','comp. sci|comp.sci'],'SELECT DISTINCT s.ID, s.name FROM student s\nWHERE NOT EXISTS (\n  SELECT course_id FROM course WHERE dept_name = \'Comp. Sci.\'\n  EXCEPT\n  SELECT t.course_id FROM takes t WHERE t.ID = s.ID\n);')">Verificar</button>
+      <button class="btn btn-secondary" onclick="showAnswer('codeInt4','SELECT DISTINCT s.ID, s.name FROM student s\nWHERE NOT EXISTS (\n  SELECT course_id FROM course\n  WHERE dept_name = \'Comp. Sci.\'\n  EXCEPT\n  SELECT t.course_id FROM takes t\n  WHERE t.ID = s.ID\n);')">Ver respuesta</button>
+    </div>
+  </div>
+
+  <!-- INT.6 -->
+  <div class="quiz-card" data-quiz="codeInt6">
+    <div class="q-header"><span class="q-badge code">Joins complejos</span></div>
+    <div class="q-text">Para cada estudiante, muestra su nombre y el <strong>número de cursos completados</strong> (grade no es null ni 'F'). Los estudiantes sin cursos deben aparecer con 0. <em>(Pista: la condición va en ON, no en WHERE)</em></div>
+    <textarea class="code-editor" id="codeInt6" rows="5" placeholder="SELECT ..."></textarea>
+    <div class="quiz-feedback" id="fb-codeInt6"></div>
+    <div class="quiz-actions">
+      <button class="btn btn-primary" onclick="checkSQL('codeInt6',['select','count','from','student','left','join|outer','takes','on','group by','grade is not null|grade<>|grade !='],'SELECT s.ID, s.name, COUNT(t.course_id) AS courses_completed\nFROM student s LEFT OUTER JOIN takes t\n  ON s.ID = t.ID AND t.grade IS NOT NULL AND t.grade <> \'F\'\nGROUP BY s.ID, s.name;')">Verificar</button>
+      <button class="btn btn-secondary" onclick="showAnswer('codeInt6','SELECT s.ID, s.name,\n  COUNT(t.course_id) AS courses_completed\nFROM student s LEFT OUTER JOIN takes t\n  ON s.ID = t.ID\n  AND t.grade IS NOT NULL\n  AND t.grade <> \'F\'\nGROUP BY s.ID, s.name;')">Ver respuesta</button>
+    </div>
+  </div>
+
+  <!-- INT.8 error detection -->
+  <div class="quiz-card" data-quiz="qInt8">
+    <div class="q-header"><span class="q-badge mc">Detectar el error</span></div>
+    <div class="q-text">El siguiente SQL tiene un problema. ¿Cuál es?<br><br><code>SELECT dept_name, ID, avg(salary) FROM instructor GROUP BY dept_name;</code></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" data-val="a" onclick="selectOpt(this)"><span class="opt-marker">A</span><span>Falta la cláusula WHERE</span></div>
+      <div class="quiz-opt" data-val="b" onclick="selectOpt(this)"><span class="opt-marker">B</span><span>ID no está en GROUP BY ni es argumento de función agregada</span></div>
+      <div class="quiz-opt" data-val="c" onclick="selectOpt(this)"><span class="opt-marker">C</span><span>avg(salary) no puede usarse sin HAVING</span></div>
+    </div>
+    <div class="quiz-feedback" id="fb-qInt8"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkQuiz('qInt8','b','Correcto. Todos los atributos en SELECT que no son agregados DEBEN aparecer en GROUP BY. ID no está en GROUP BY, lo que hace la consulta inválida.','ID no está en GROUP BY ni es argumento de una función agregada. Todo atributo no agregado en SELECT debe estar en GROUP BY.')">Verificar</button></div>
+  </div>
+
+  <!-- INT.10 -->
+  <div class="quiz-card" data-quiz="qInt10">
+    <div class="q-header"><span class="q-badge mc">Integridad referencial</span></div>
+    <div class="q-text">Se intenta eliminar el departamento 'Physics' pero existen instructores asignados. ¿Qué ocurre si la FK tiene <code>ON DELETE CASCADE</code>?</div>
+    <div class="quiz-options">
+      <div class="quiz-opt" data-val="a" onclick="selectOpt(this)"><span class="opt-marker">A</span><span>La operación falla con error</span></div>
+      <div class="quiz-opt" data-val="b" onclick="selectOpt(this)"><span class="opt-marker">B</span><span>Se eliminan automáticamente todos los instructores de Physics (y potencialmente en cadena)</span></div>
+      <div class="quiz-opt" data-val="c" onclick="selectOpt(this)"><span class="opt-marker">C</span><span>dept_name de los instructores se pone a NULL</span></div>
+    </div>
+    <div class="quiz-feedback" id="fb-qInt10"></div>
+    <div class="quiz-actions"><button class="btn btn-primary" onclick="checkQuiz('qInt10','b','Correcto. ON DELETE CASCADE propaga la eliminación: todos los instructores de Physics se eliminan, y potencialmente las tuplas que los referencian en otras tablas también.','CASCADE elimina en cadena todos los registros que referencian al departamento eliminado.')">Verificar</button></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--              RESUMEN FINAL Y SCORE                            -->
+<!-- ============================================================ -->
+<div class="chapter-divider" id="capResumen">
+  <div class="cd-num">Resumen</div>
+  <h2>Conceptos Clave para el Examen</h2>
+</div>
+
+<div class="section" id="sResumen">
+  <h2>Resumen General</h2>
+
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Tema</th><th>Conceptos clave</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Modelo Relacional</strong></td><td>Tablas, tuplas, atributos, dominios atómicos, sin duplicados (matemáticamente)</td></tr>
+      <tr><td><strong>Claves</strong></td><td>Superclave ⊇ Candidata ⊇ Primaria. FK referencia PK de otra tabla</td></tr>
+      <tr><td><strong>Álgebra Relacional</strong></td><td>σ (select), Π (project), ρ (rename), × (producto), ⋈ (join), ∪, ∩, −</td></tr>
+      <tr><td><strong>DDL</strong></td><td>CREATE TABLE, ALTER TABLE, DROP TABLE. PK, FK, NOT NULL, UNIQUE, CHECK</td></tr>
+      <tr><td><strong>DML</strong></td><td>SELECT-FROM-WHERE, DISTINCT, ORDER BY, BETWEEN, LIKE, GROUP BY + HAVING</td></tr>
+      <tr><td><strong>Subconsultas</strong></td><td>IN/NOT IN, SOME/ALL, EXISTS/NOT EXISTS, FROM, WITH</td></tr>
+      <tr><td><strong>Joins</strong></td><td>INNER (default), LEFT/RIGHT/FULL OUTER. NATURAL, USING, ON</td></tr>
+      <tr><td><strong>Vistas</strong></td><td>CREATE VIEW, vistas materializadas, condiciones de actualización</td></tr>
+      <tr><td><strong>Transacciones</strong></td><td>COMMIT/ROLLBACK, atomicidad, ACID</td></tr>
+      <tr><td><strong>Integridad</strong></td><td>NOT NULL, UNIQUE, CHECK, FK con CASCADE/SET NULL/SET DEFAULT</td></tr>
+      <tr><td><strong>Autorización</strong></td><td>GRANT/REVOKE, roles, WITH GRANT OPTION, cascading revocation</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="score-summary" id="scoreSummary">
+    <div class="big-score" id="finalScore">—</div>
+    <p>Ejercicios completados correctamente</p>
+    <div style="margin-top:16px">
+      <button class="btn btn-primary" onclick="calcScore()">Calcular mi puntuación</button>
+      <button class="btn btn-secondary" onclick="resetAll()" style="margin-left:8px">Reiniciar todo</button>
+    </div>
+  </div>
+</div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- Scroll to top -->
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+/* ===== NAVIGATION ===== */
+const chapters = [
+  {id:'cap1',label:'Cap 1',title:'Introducción a DBMS',sections:[
+    {id:'s1-1',title:'1.1 Conceptos Fundamentales'},
+    {id:'s1-2',title:'1.2 Propósito de los DBMS'},
+    {id:'s1-3',title:'1.3 Vista de los Datos'},
+    {id:'s1-4',title:'1.4 Lenguajes de BD'},
+    {id:'s1-5',title:'1.5 Diseño y Motor'}
+  ]},
+  {id:'cap2',label:'Cap 2',title:'Modelo Relacional',sections:[
+    {id:'s2-1',title:'2.1 Estructura Relacional'},
+    {id:'s2-2',title:'2.2-2.3 Esquema y Claves'},
+    {id:'s2-4',title:'2.4-2.6 Álgebra Relacional'}
+  ]},
+  {id:'cap3',label:'Cap 3',title:'Introducción a SQL',sections:[
+    {id:'s3-1',title:'3.1-3.2 DDL'},
+    {id:'s3-3',title:'3.3-3.4 Consultas Básicas'},
+    {id:'s3-5',title:'3.5-3.6 Conjuntos y NULL'},
+    {id:'s3-7',title:'3.7 Agregadas y GROUP BY'},
+    {id:'s3-8',title:'3.8 Subconsultas'},
+    {id:'s3-9',title:'3.9 Modificación'}
+  ]},
+  {id:'cap4',label:'Cap 4',title:'SQL Intermedio',sections:[
+    {id:'s4-1',title:'4.1 Expresiones JOIN'},
+    {id:'s4-2',title:'4.2 Vistas'},
+    {id:'s4-3',title:'4.3 Transacciones'},
+    {id:'s4-4',title:'4.4 Integridad'},
+    {id:'s4-5',title:'4.5-4.7 Tipos, Índices, Auth'}
+  ]},
+  {id:'capInt',label:'Int',title:'Ejercicios Integrados',sections:[
+    {id:'sInt',title:'Ejercicios Complejos'}
+  ]},
+  {id:'capResumen',label:'Res',title:'Resumen Final',sections:[
+    {id:'sResumen',title:'Conceptos Clave'}
+  ]}
+];
+
+const sidebarNav = document.getElementById('sidebarNav');
+chapters.forEach((ch,ci) => {
+  const div = document.createElement('div');
+  div.className = 'nav-chapter' + (ci===0?' open':'');
+  div.innerHTML = `<button class="nav-chapter-title" onclick="this.parentElement.classList.toggle('open')">
+    <span class="ch-num">${ch.label}</span>${ch.title}<span class="arrow">▶</span>
+  </button><div class="nav-sections">${ch.sections.map(s =>
+    `<button class="nav-link" onclick="smoothNav('${s.id}')">${s.title}</button>`
+  ).join('')}</div>`;
+  sidebarNav.appendChild(div);
+});
+
+function smoothNav(id){
+  const el = document.getElementById(id);
+  if(el){el.scrollIntoView({behavior:'smooth',block:'start'})}
+  if(window.innerWidth<=900){sidebar.classList.remove('open')}
+}
+
+/* Menu toggle */
+const sidebar = document.getElementById('sidebar');
+document.getElementById('menuToggle').addEventListener('click',()=>{
+  if(window.innerWidth<=900) sidebar.classList.toggle('open');
+  else sidebar.classList.toggle('closed');
+});
+
+/* Theme toggle */
+const themeBtn = document.getElementById('themeToggle');
+function setTheme(dark){
+  document.documentElement.setAttribute('data-theme', dark?'dark':'');
+  themeBtn.textContent = dark?'☀️':'🌙';
+  try{localStorage.setItem('db-theme', dark?'dark':'light')}catch(e){}
+}
+themeBtn.addEventListener('click',()=>{
+  setTheme(document.documentElement.getAttribute('data-theme')!=='dark');
+});
+try{if(localStorage.getItem('db-theme')==='dark') setTheme(true)}catch(e){}
+
+/* Scroll: update topbar + scroll-top btn */
+const topbarTitle = document.getElementById('topbarTitle');
+const scrollTopBtn = document.getElementById('scrollTop');
+const allSections = document.querySelectorAll('.chapter-divider, .section');
+window.addEventListener('scroll',()=>{
+  scrollTopBtn.classList.toggle('show', window.scrollY > 400);
+  let current = '';
+  allSections.forEach(s => {
+    if(s.getBoundingClientRect().top < 120) current = s.id;
+  });
+  if(current){
+    const ch = chapters.find(c => c.id===current || c.sections.some(s=>s.id===current));
+    if(ch){
+      const sec = ch.sections.find(s=>s.id===current);
+      topbarTitle.textContent = sec ? sec.title : ch.title;
+    }
+  }
+  // highlight nav
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  if(current){
+    const activeLink = document.querySelector(`.nav-link[onclick*="'${current}'"]`);
+    if(activeLink) activeLink.classList.add('active');
+  }
+},{passive:true});
+
+/* ===== QUIZ ENGINE ===== */
+const answered = {};
+
+function selectOpt(el){
+  const card = el.closest('.quiz-card');
+  const qid = card.dataset.quiz;
+  if(answered[qid]) return;
+  card.querySelectorAll('.quiz-opt').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function checkQuiz(qid, correct, correctMsg, wrongMsg){
+  if(answered[qid]) return;
+  const card = document.querySelector(`[data-quiz="${qid}"]`);
+  const selected = card.querySelector('.quiz-opt.selected');
+  if(!selected) return;
+  const fb = document.getElementById('fb-'+qid);
+  const val = selected.dataset.val;
+  answered[qid] = val === correct;
+  if(val === correct){
+    selected.classList.add('correct');
+    fb.className = 'quiz-feedback show correct';
+    fb.textContent = '✓ ' + correctMsg;
+  } else {
+    selected.classList.add('incorrect');
+    const correctEl = card.querySelector(`.quiz-opt[data-val="${correct}"]`);
+    if(correctEl) correctEl.classList.add('correct');
+    fb.className = 'quiz-feedback show incorrect';
+    fb.textContent = '✗ ' + wrongMsg;
+  }
+  updateProgress();
+}
+
+/* True/False */
+function selectTF(el, qid){
+  if(answered[qid]) return;
+  const card = el.closest('.quiz-card');
+  card.querySelectorAll('.tf-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function checkTF(qid, correct, correctMsg, wrongMsg){
+  if(answered[qid]) return;
+  const card = document.querySelector(`[data-quiz="${qid}"]`);
+  const selected = card.querySelector('.tf-btn.selected');
+  if(!selected) return;
+  const val = selected.dataset.val;
+  answered[qid] = val === correct;
+  const fb = document.getElementById('fb-'+qid);
+  card.querySelectorAll('.tf-btn').forEach(b=>{
+    if(b.dataset.val === correct) b.classList.add('correct-answer');
+    else if(b.classList.contains('selected') && b.dataset.val !== correct) b.classList.add('wrong-answer');
+  });
+  if(val === correct){
+    fb.className = 'quiz-feedback show correct';
+    fb.textContent = '✓ ' + correctMsg;
+  } else {
+    fb.className = 'quiz-feedback show incorrect';
+    fb.textContent = '✗ ' + wrongMsg;
+  }
+  updateProgress();
+}
+
+/* Fill in blanks */
+function checkFill(qid, inputIds){
+  if(answered[qid]) return;
+  let allCorrect = true;
+  inputIds.forEach(iid => {
+    const inp = document.getElementById(iid);
+    const answer = inp.dataset.answer;
+    const val = inp.value.trim().toUpperCase();
+    if(val === answer.toUpperCase()){
+      inp.classList.add('correct');
+      inp.classList.remove('incorrect');
+    } else {
+      inp.classList.add('incorrect');
+      inp.classList.remove('correct');
+      allCorrect = false;
+    }
+    inp.readOnly = true;
+  });
+  answered[qid] = allCorrect;
+  const fb = document.getElementById('fb-'+qid);
+  if(allCorrect){
+    fb.className = 'quiz-feedback show correct';
+    fb.textContent = '✓ ¡Todas las respuestas son correctas!';
+  } else {
+    fb.className = 'quiz-feedback show incorrect';
+    fb.textContent = '✗ Algunas respuestas son incorrectas. Las respuestas correctas se muestran en verde.';
+    inputIds.forEach(iid => {
+      const inp = document.getElementById(iid);
+      if(inp.classList.contains('incorrect')){
+        inp.value = inp.dataset.answer;
+        inp.classList.remove('incorrect');
+        inp.classList.add('correct');
+      }
+    });
+  }
+  updateProgress();
+}
+
+/* SQL exercise */
+function checkSQL(qid, keywords, answer){
+  if(answered[qid]) return;
+  const textarea = document.getElementById(qid);
+  const val = textarea.value.trim().toLowerCase().replace(/\s+/g,' ');
+  const fb = document.getElementById('fb-'+qid);
+  if(!val){fb.className='quiz-feedback show incorrect';fb.textContent='✗ Escribe tu consulta antes de verificar.';return;}
+  let matchCount = 0;
+  keywords.forEach(kw => {
+    const alternatives = kw.split('|');
+    if(alternatives.some(alt => val.includes(alt.toLowerCase()))) matchCount++;
+  });
+  const ratio = matchCount / keywords.length;
+  if(ratio >= 0.8){
+    answered[qid] = true;
+    fb.className = 'quiz-feedback show correct';
+    fb.textContent = '✓ ¡Excelente! Tu consulta contiene los elementos clave correctos.';
+    textarea.style.borderColor = 'var(--green)';
+  } else if(ratio >= 0.5){
+    fb.className = 'quiz-feedback show incorrect';
+    fb.textContent = '✗ Tu consulta está parcialmente correcta, pero le faltan elementos clave. Revisa la respuesta modelo.';
+  } else {
+    fb.className = 'quiz-feedback show incorrect';
+    fb.textContent = '✗ Tu consulta no parece correcta. Revisa la respuesta modelo haciendo clic en "Ver respuesta".';
+  }
+  updateProgress();
+}
+
+function showAnswer(qid, answer){
+  const fb = document.getElementById('fb-'+qid);
+  fb.className = 'quiz-feedback show correct';
+  fb.innerHTML = '<strong>Respuesta modelo:</strong><pre style="margin:8px 0 0;background:transparent;border:none;padding:0;color:inherit">' + answer.replace(/</g,'&lt;') + '</pre>';
+  answered[qid] = answered[qid] || false;
+  updateProgress();
+}
+
+/* Matching */
+const matchState = {};
+function selectMatch(el, exId){
+  if(!matchState[exId]) matchState[exId] = {left:null, right:null, pairs:[]};
+  const side = el.dataset.match;
+  const st = matchState[exId];
+  // if already matched, skip
+  if(el.classList.contains('matched')) return;
+  // deselect same side
+  const container = el.closest('.match-col');
+  container.querySelectorAll('.match-item').forEach(i=>{if(!i.classList.contains('matched'))i.classList.remove('selected')});
+  el.classList.add('selected');
+  st[side] = el;
+  // if both selected, try pair
+  if(st.left && st.right){
+    st.pairs.push({left:st.left, right:st.right});
+    st.left.classList.remove('selected');
+    st.right.classList.remove('selected');
+    st.left.classList.add('matched');
+    st.right.classList.add('matched');
+    st.left = null;
+    st.right = null;
+  }
+}
+
+function checkMatch(exId){
+  const qid = exId;
+  if(answered[qid]) return;
+  const st = matchState[exId];
+  if(!st) return;
+  const fb = document.getElementById('fb-'+qid);
+  const container = document.getElementById(exId);
+  const matchedItems = container.querySelectorAll('.match-item.matched');
+  if(matchedItems.length === 0){fb.className='quiz-feedback show incorrect';fb.textContent='✗ Empareja elementos seleccionando uno de cada columna.';return;}
+  let allCorrect = true;
+  st.pairs.forEach(p=>{
+    if(p.left.dataset.pair === p.right.dataset.pair){
+      p.left.classList.add('matched');
+      p.right.classList.add('matched');
+      p.left.classList.remove('wrong');
+      p.right.classList.remove('wrong');
+    } else {
+      p.left.classList.add('wrong');
+      p.right.classList.add('wrong');
+      allCorrect = false;
+    }
+  });
+  // check all pairs found
+  const leftItems = container.querySelectorAll('[data-match="left"]');
+  if(st.pairs.length < leftItems.length) allCorrect = false;
+  answered[qid] = allCorrect;
+  if(allCorrect){
+    fb.className='quiz-feedback show correct';
+    fb.textContent='✓ ¡Todas las parejas son correctas!';
+  } else {
+    fb.className='quiz-feedback show incorrect';
+    fb.textContent='✗ Algunas parejas son incorrectas. Reinicia e inténtalo de nuevo.';
+  }
+  updateProgress();
+}
+
+function resetMatch(exId){
+  const qid = exId;
+  delete answered[qid];
+  delete matchState[exId];
+  const container = document.getElementById(exId);
+  container.querySelectorAll('.match-item').forEach(i=>{
+    i.classList.remove('matched','wrong','selected');
+  });
+  const fb = document.getElementById('fb-'+qid);
+  fb.className='quiz-feedback';fb.textContent='';
+  updateProgress();
+}
+
+/* ===== PROGRESS ===== */
+function updateProgress(){
+  const total = document.querySelectorAll('.quiz-card').length;
+  const done = Object.keys(answered).length;
+  const pct = total > 0 ? Math.round((done/total)*100) : 0;
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+function calcScore(){
+  const total = document.querySelectorAll('.quiz-card').length;
+  const correct = Object.values(answered).filter(v=>v===true).length;
+  document.getElementById('finalScore').textContent = correct + ' / ' + total;
+}
+
+function resetAll(){
+  if(!confirm('¿Reiniciar todos los ejercicios?')) return;
+  Object.keys(answered).forEach(k=>delete answered[k]);
+  // Reset all quiz UI
+  document.querySelectorAll('.quiz-opt').forEach(o=>{o.classList.remove('selected','correct','incorrect')});
+  document.querySelectorAll('.tf-btn').forEach(b=>{b.classList.remove('selected','correct-answer','wrong-answer')});
+  document.querySelectorAll('.quiz-feedback').forEach(f=>{f.className='quiz-feedback';f.textContent=''});
+  document.querySelectorAll('.fill-input').forEach(i=>{i.value='';i.readOnly=false;i.classList.remove('correct','incorrect')});
+  document.querySelectorAll('.code-editor').forEach(t=>{t.value='';t.style.borderColor=''});
+  document.querySelectorAll('.match-item').forEach(i=>{i.classList.remove('matched','wrong','selected')});
+  Object.keys(matchState).forEach(k=>delete matchState[k]);
+  document.getElementById('finalScore').textContent = '—';
+  updateProgress();
+}
+
+updateProgress();
+</script>
+</body>
+</html>
