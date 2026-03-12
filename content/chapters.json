@@ -1,0 +1,58 @@
+[ 
+  {
+    "id": "capitulo-1",
+    "number": 1,
+    "title": "Introducción a los Sistemas de Bases de Datos",
+    "description": "Fundamentos de DBMS, arquitectura, vistas de datos y conceptos base.",
+    "file": "content/chapters/capitulo-1.md",
+    "type": "markdown"
+  },
+  {
+    "id": "capitulo-2",
+    "number": 2,
+    "title": "Introducción al Modelo Relacional",
+    "description": "Estructura relacional, claves y álgebra relacional.",
+    "file": "content/chapters/capitulo-2.md",
+    "type": "markdown"
+  },
+  {
+    "id": "capitulo-3",
+    "number": 3,
+    "title": "Introducción a SQL",
+    "description": "DDL, consultas, agregación, subconsultas y modificaciones.",
+    "file": "content/chapters/capitulo-3.md",
+    "type": "markdown"
+  },
+  {
+    "id": "capitulo-4",
+    "number": 4,
+    "title": "SQL Intermedio",
+    "description": "Joins, vistas, transacciones, integridad, índices y autorización.",
+    "file": "content/chapters/capitulo-4.md",
+    "type": "markdown"
+  },
+  {
+    "id": "capitulo-5",
+    "number": 5,
+    "title": "SQL Avanzado",
+    "description": "JDBC, procedimientos almacenados, triggers, recursividad y agregación avanzada.",
+    "file": "content/chapters/capitulo-5.md",
+    "type": "markdown"
+  },
+  {
+    "id": "capitulo-integracion",
+    "number": 6,
+    "title": "Ejercicios Integrados",
+    "description": "Ejercicios acumulativos de todos los capítulos.",
+    "file": "content/chapters/capitulo-integracion.md",
+    "type": "markdown"
+  },
+  {
+    "id": "capitulo-resumen",
+    "number": 7,
+    "title": "Resumen Final",
+    "description": "Resumen de conceptos clave para repaso de examen.",
+    "file": "content/chapters/capitulo-resumen.md",
+    "type": "markdown"
+  }
+]
