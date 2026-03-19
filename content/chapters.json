@@ -40,8 +40,16 @@
     "type": "markdown"
   },
   {
-    "id": "capitulo-integracion",
+    "id": "capitulo-6",
     "number": 6,
+    "title": "Diseño de Bases de Datos con el Modelo E-R",
+    "description": "Modelado entidad-relación, cardinalidades, claves y traducción a esquema relacional.",
+    "file": "content/chapters/capitulo-6.md",
+    "type": "markdown"
+  },
+  {
+    "id": "capitulo-integracion",
+    "number": 7,
     "title": "Ejercicios Integrados",
     "description": "Ejercicios acumulativos de todos los capítulos.",
     "file": "content/chapters/capitulo-integracion.md",
@@ -49,7 +57,7 @@
   },
   {
     "id": "capitulo-resumen",
-    "number": 7,
+    "number": 8,
     "title": "Resumen Final",
     "description": "Resumen de conceptos clave para repaso de examen.",
     "file": "content/chapters/capitulo-resumen.md",
